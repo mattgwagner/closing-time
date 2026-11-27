@@ -1,0 +1,1523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Closing Time</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;color:#f2ecff;user-select:none;-webkit-user-select:none}
+[hidden]{display:none!important}
+#stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;background:#000}
+#cv{position:absolute;left:0;top:0;width:1600px;height:900px;display:block}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+.dim{background:rgba(6,2,14,.78)}
+.row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+button{font:inherit;cursor:pointer;border:3px solid #6ff3e8;background:rgba(22,10,44,.88);color:#fff;border-radius:14px;padding:12px 28px;font-size:28px;font-weight:700;letter-spacing:.5px;box-shadow:0 0 18px rgba(111,243,232,.25)}
+button:hover:not(:disabled){background:#33195e}
+button:disabled{opacity:.35;cursor:default}
+button small{display:block;font-size:15px;font-weight:400;opacity:.75;margin-top:2px}
+h1{font-size:120px;margin:0 0 6px;letter-spacing:6px;color:#ff5fd2;text-shadow:0 0 10px #ff5fd2,0 0 40px #b0207e,4px 4px 0 #2a0b3d}
+h2{font-size:64px;margin:0;color:#6ff3e8;text-shadow:0 0 14px #1aa79c}
+p{font-size:26px;margin:0;max-width:1000px;line-height:1.35}
+.sub{font-size:28px;color:#d8c8ff}
+#title{justify-content:flex-start;padding-top:70px;box-sizing:border-box}
+#title .row{margin-top:6px}
+#stars{font-size:30px;color:#ffd84d;min-height:40px}
+#bSoft{font-size:22px;padding:8px 20px;border-color:#a78bfa}
+#bSoft.on{background:#a78bfa;color:#140a2a}
+/* in-game controls */
+#hud{position:absolute;inset:0;pointer-events:none}
+#hud>*{pointer-events:auto}
+.ctl{position:absolute;width:130px;height:92px;padding:6px;font-size:22px;border-radius:12px;border-color:#8c7bb8;background:rgba(30,22,50,.9)}
+.ctl.on{background:#ffe066;color:#241400;border-color:#fff3b0;box-shadow:0 0 24px #ffe066}
+.ctl.door.on{background:#ff6b6b;color:#2a0505;border-color:#ffc2c2;box-shadow:0 0 24px #ff6b6b}
+#bDoorL{left:285px;top:330px}#bLightL{left:285px;top:438px}
+#bDoorR{left:1185px;top:330px}#bLightR{left:1185px;top:438px}
+#bWin{left:700px;top:445px;width:200px;height:62px;font-size:20px}
+#bVent{left:420px;top:572px;width:180px;height:62px;font-size:19px}
+#bCam{position:absolute;left:500px;top:820px;width:600px;height:66px;font-size:26px;padding:4px;border-color:#6ff3e8}
+#bPause{position:absolute;right:16px;top:14px;width:64px;height:56px;padding:0;font-size:26px}
+#camMap{position:absolute;left:1068px;top:508px;width:510px;height:300px;border:3px solid #6ff3e8;border-radius:14px;background:rgba(4,20,24,.72)}
+#camMap button{position:absolute;width:104px;height:42px;padding:0;font-size:15px;border-width:2px;border-radius:8px;box-shadow:none;background:rgba(10,40,46,.95)}
+#camMap button.on{background:#6ff3e8;color:#03221f}
+#camMap .you{position:absolute;left:206px;top:262px;width:100px;text-align:center;font-weight:700;color:#ffe066;font-size:18px}
+#msg{position:absolute;left:350px;top:200px;width:900px;padding:22px 30px;border:3px solid #ffe066;border-radius:18px;background:rgba(26,18,4,.95);text-align:left;box-shadow:0 0 0 2000px rgba(0,0,0,.45)}
+#msg b{font-size:28px;color:#ffe066}
+#msg p{font-size:27px;margin:12px 0 16px;min-height:200px;max-width:none}
+#msg button{font-size:26px;padding:8px 26px;border-color:#ffe066}
+#cap{position:absolute;left:300px;width:1000px;top:765px;text-align:center;font-size:22px;color:#fff;text-shadow:0 0 6px #000,0 0 3px #000;pointer-events:none;transition:opacity .4s}
+/* custom night */
+#custom{gap:22px}
+.cards{display:flex;gap:22px}
+.card{width:300px;border:3px solid #8c7bb8;border-radius:16px;background:rgba(24,14,44,.92);padding:14px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:8px}
+.card canvas{width:220px;height:180px}
+.card .nm{font-size:28px;font-weight:700}
+.card .lv{font-size:56px;font-weight:700;color:#ffe066;min-width:80px}
+.card .row{gap:10px;align-items:center}
+.card button{font-size:34px;padding:2px 20px}
+#how{gap:12px}
+#how .who{display:grid;grid-template-columns:repeat(2,560px);gap:14px;text-align:left}
+#how .who div{border:2px solid #8c7bb8;border-radius:14px;padding:12px 16px;background:rgba(24,14,44,.9);font-size:21px;line-height:1.35}
+#how .who b{color:#ffe066;font-size:24px}
+#how .keys{font-size:20px;color:#d8c8ff;max-width:1150px}
+/* chapter picker */
+#chRow button{font-size:26px;padding:8px 26px;border-color:#8c7bb8;box-shadow:none;opacity:.75}
+#chRow button.on{border-color:#ffe066;background:#3b2266;opacity:1;box-shadow:0 0 18px rgba(255,224,102,.35)}
+/* chapter 2 office controls */
+#bFeed{left:1185px;top:330px}
+#bLamp{left:420px;top:572px;width:180px;height:62px;font-size:19px}
+.hue{top:445px;width:120px;height:62px;font-size:20px;border-width:4px}
+#bHue0{left:615px;border-color:#ff4d5e}#bHue1{left:740px;border-color:#4ddb6a}#bHue2{left:865px;border-color:#4d8dff}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" width="1600" height="900"></canvas>
+
+  <div id="title" class="scr">
+    <h1>CLOSING TIME</h1>
+    <p class="sub" id="tSub"></p>
+    <div class="row" id="chRow"><button id="bCh1">Chapter 1<small>Rollaway Rink</small></button><button id="bCh2">Chapter 2<small>Starlite Cinema</small></button></div>
+    <div class="row"><button id="bCont">Night 1</button><button id="bNew">New game</button></div>
+    <div class="row"><button id="bCustom">Custom Night</button><button id="bHow">How to play</button></div>
+    <button id="bSoft">Less scary: OFF</button>
+    <div id="stars"></div>
+  </div>
+
+  <div id="how" class="scr dim" hidden>
+    <h2>How to survive the night</h2>
+    <div class="who" id="howWho"></div>
+    <p class="keys" id="howKeys"></p>
+    <button id="howBack">Got it</button>
+  </div>
+
+  <div id="custom" class="scr dim" hidden>
+    <h2>Custom Night</h2>
+    <p>Set how wild each one is, from 0 (stays asleep) to 20 (absolutely bonkers).</p>
+    <p class="sub" id="customHint"></p>
+    <div class="cards" id="cards"></div>
+    <div class="row"><button class="preset" data-v="5">All 5</button><button class="preset" data-v="10">All 10</button><button class="preset" data-v="20">All 20</button></div>
+    <div class="row"><button id="cGo">Start the night</button><button id="cBack">Back</button></div>
+  </div>
+
+  <div id="hud" hidden>
+    <button class="ctl door" id="bDoorL">DOOR<small>Q</small></button>
+    <button class="ctl" id="bLightL">LIGHT<small>A</small></button>
+    <button class="ctl door" id="bDoorR">DOOR<small>E</small></button>
+    <button class="ctl" id="bLightR">LIGHT<small>D</small></button>
+    <button class="ctl" id="bWin">WINDOW LIGHT<small>W</small></button>
+    <button class="ctl door" id="bVent">VENT HATCH<small>S</small></button>
+    <button class="ctl" id="bFeed">POPCORN<small>E</small></button>
+    <button class="ctl" id="bLamp">PROJECTOR<small>S</small></button>
+    <button class="ctl hue" id="bHue0">RED<small>R</small></button>
+    <button class="ctl hue" id="bHue1">GREEN<small>G</small></button>
+    <button class="ctl hue" id="bHue2">BLUE<small>B</small></button>
+    <button id="bCam">▲ CAMERAS <small>Space</small></button>
+    <button id="bPause" aria-label="Pause">⏸</button>
+    <div id="camMap" hidden></div>
+    <div id="msg" hidden><b>📞 Message from the old guard</b><p id="msgText"></p><button id="msgOk">Got it</button></div>
+    <div id="cap"></div>
+  </div>
+
+  <div id="pause" class="scr dim" hidden>
+    <h2>Paused</h2>
+    <div class="row"><button id="pRes">Keep going</button><button id="pQuit">Quit to title</button></div>
+  </div>
+
+  <div id="over" class="scr dim" hidden>
+    <h2 id="overT"></h2>
+    <p id="overWhen" class="sub"></p>
+    <p id="overTip"></p>
+    <div class="row"><button id="oRetry">Try again</button><button id="oTitle">Title</button></div>
+  </div>
+
+  <div id="won" class="scr dim" hidden>
+    <h2 id="wonT"></h2>
+    <p id="wonP"></p>
+    <div class="row"><button id="wNext">Next night</button><button id="wTitle">Title</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ======================================================================================
+// Game rules. Pure logic (no DOM) so e2e/bot.mjs can simulate whole nights at high speed.
+// ======================================================================================
+const HOUR = 45;                       // real seconds per in-game hour; a night is 12 AM → 6 AM
+const NIGHT_LEN = HOUR * 6;
+const DRAIN = 0.085;                   // power % per second, per unit of usage
+const NIGHTS = [null, [3,0,0,0], [5,3,0,2], [7,5,4,5], [9,8,7,8], [11,10,10,10]]; // Bopper, Pippa, Rattles, Zoom
+const WHO = ["bop", "pip", "rat", "zoom"];
+const NAMES = { bop: "Bopper", pip: "Pippa", rat: "Rattles", zoom: "Zoom", power: "Bopper" };
+const BOP_PATH = ["stage", "snack", "rental", "lhall", "ldoor"];
+const BOP_CAM = { stage: 1, snack: 3, rental: 7, lhall: 5 };
+const PIP_PATH = ["rink", "rail", "party", "window"];
+const PIP_CAM = { rink: 2, rail: 2, party: 8 };
+
+// Chapter 2, Starlite Cinema: Bopper (back, same left door), Gulp, Hue, Lumi. Bopper walks the same camera numbers.
+const DRAIN2 = [0.2, 0.13, 0.15, 0.17, 0.21, 0.21, 0.2]; // power drain by night (6 = Custom): the cinema eats power faster as the week goes on
+const NIGHTS2 = [null, [3,0,0,0], [5,3,3,0], [7,5,5,4], [9,8,8,8], [11,10,10,10]]; // Bopper, Gulp, Hue, Lumi
+const GULP_CAM = [4, 2, 6];            // Popcorn Machine → Lobby → the Aisle → your popcorn chute
+const HUE_CAM = [8, 2];                // Poster Hall → Lobby → your window
+const gulpWait = a => Math.max(2.6, 4.5 - a * 0.08); // seconds Gulp chomps at the chute before he climbs in
+const hueWait = a => Math.max(4.5, 9 - a * 0.2);     // seconds Hue waits at the window for her colour
+const lumiWait = a => Math.max(4.5, 9 - a * 0.2);    // seconds Lumi circles the projector
+const LUMI_DARK = 2;                                 // seconds of dark (projector, light and tablet off) to send Lumi off
+
+function newNight(night, ai, ch = 1) {
+  return {
+    ch, night, ai: ai.slice(), t: 0, power: 100,
+    doorL: false, doorR: false, lightL: false, lightR: false, winLight: false, hatch: false, cams: false, cam: 1, lamp: true,
+    bop: { i: 0, clock: 0, doorT: 0 },
+    pip: { i: 0, clock: 0, winT: 0, push: 0 },
+    rat: { i: 0, clock: 0, nearT: 0 },
+    zoom: { st: 0, clock: 0, runT: 0, lock: 0 },
+    gulp: { i: 0, clock: 0, chuteT: 0 },
+    hue: { i: 0, clock: 0, winT: 0, col: 0 },
+    lumi: { i: 0, clock: 0, lampT: 0, darkT: 0 },
+    out: null, over: null, won: false, glitch: 0, bangs: 0, events: [],
+  };
+}
+function usage(S) {
+  if (S.ch === 2) return 1 + S.doorL + S.lightL + S.cams;
+  return 1 + S.doorL + S.doorR + (S.lightL || S.lightR) + S.winLight + S.hatch + S.cams;
+}
+const bopWait = a => Math.max(4.5, 9 - a * 0.2);    // seconds Bopper waits at the left door
+const pipWait = a => Math.max(3.5, 8 - a * 0.2);   // seconds Pippa waits at the window
+const ratWait = a => Math.max(3.5, 8 - a * 0.2);   // seconds Rattles waits at the vent
+const zoomRun = a => Math.max(3.2, 5 - a * 0.1);   // seconds Zoom takes down the East Hall
+function lose(S, who) { S.over = who; S.cams = false; S.events.push("scare"); }
+function glitch(S, a, b) { if (S.cams && (S.cam === a || S.cam === b)) { S.glitch = 0.9; S.events.push("glitch"); } }
+
+// Bopper walks a path to the left door, then waits. A shut door sends him back to the snack bar. Same in both chapters.
+// Returns true when he got you.
+function bopStep(S, dt, rnd) {
+  const b = S.bop, a = S.ai[0];
+  if (a <= 0) return false;
+  if (b.i < 4) {
+    b.clock += dt;
+    if (b.clock >= 4.9) {
+      b.clock -= 4.9;
+      if (rnd() * 20 < a) {
+        const from = BOP_CAM[BOP_PATH[b.i]];
+        b.i++;
+        S.events.push(b.i >= 3 ? "step-near" : "step");
+        glitch(S, from, BOP_CAM[BOP_PATH[b.i]]);
+        if (b.i === 4) b.doorT = 0;
+      }
+    }
+  } else {
+    b.doorT += dt;
+    if (b.doorT >= bopWait(a)) {
+      if (S.doorL) { b.i = 1; b.clock = 0; S.events.push("bop-leave"); }
+      else { lose(S, "bop"); return true; }
+    }
+  }
+  return false;
+}
+
+// Chapter 2's three new ones. Each has its own move, and none of them is a door.
+function step2(S, dt, rnd) {
+  const ai = S.ai;
+  // Gulp waddles Popcorn Machine → Lobby → the Aisle → the popcorn chute. Popcorn sends him back (see feed()).
+  const g = S.gulp;
+  if (ai[1] > 0) {
+    if (g.i < 3) {
+      g.clock += dt;
+      if (g.clock >= 5.1) {
+        g.clock -= 5.1;
+        if (rnd() * 20 < ai[1]) {
+          const from = GULP_CAM[g.i];
+          g.i++;
+          S.events.push("gulp" + g.i);
+          glitch(S, from, GULP_CAM[g.i] || from);
+          if (g.i === 3) g.chuteT = 0;
+        }
+      }
+    } else {
+      g.chuteT += dt;
+      if (g.chuteT >= gulpWait(ai[1])) return lose(S, "gulp");
+    }
+  }
+  // Hue sneaks Poster Hall → Lobby → the window, glowing red, green or blue. The matching button sends her back.
+  const h = S.hue;
+  if (ai[2] > 0) {
+    if (h.i < 2) {
+      h.clock += dt;
+      if (h.clock >= 4.7) {
+        h.clock -= 4.7;
+        if (rnd() * 20 < ai[2]) {
+          const from = HUE_CAM[h.i];
+          h.i++;
+          glitch(S, from, HUE_CAM[h.i] || from);
+          if (h.i === 2) { h.winT = 0; h.col = Math.floor(rnd() * 3); S.events.push("hue-window"); }
+          else S.events.push("hue-move");
+        }
+      }
+    } else {
+      h.winT += dt;
+      if (h.winT >= hueWait(ai[2])) return lose(S, "hue");
+    }
+  }
+  // Lumi flutters down from the rafters to the projector. Lights and the tablet pull her in faster.
+  // At the projector she only leaves after LUMI_DARK seconds with the projector, the hall light and the tablet all off.
+  const l = S.lumi;
+  if (ai[3] > 0) {
+    if (l.i < 2) {
+      l.clock += dt * (S.cams || S.lightL ? 1.6 : 0.7);
+      if (l.clock >= 5.2) {
+        l.clock -= 5.2;
+        if (rnd() * 20 < ai[3]) {
+          l.i++;
+          glitch(S, 9, 9);
+          if (l.i === 2) { l.lampT = 0; l.darkT = 0; S.events.push("lumi-lamp"); }
+          else S.events.push("lumi-move");
+        }
+      }
+    } else {
+      l.lampT += dt;
+      l.darkT = !S.lamp && !S.cams && !S.lightL ? l.darkT + dt : 0;
+      if (l.darkT >= LUMI_DARK) { l.i = 0; l.clock = 0; S.events.push("lumi-leave"); }
+      else if (l.lampT >= lumiWait(ai[3])) return lose(S, "lumi");
+    }
+  }
+}
+// Tossing popcorn sends Gulp back to the machine if he's on the Aisle or at the chute. Otherwise it's wasted power.
+function feed(S) {
+  if (S.gulp.i >= 2) { S.gulp.i = 0; S.gulp.clock = 0; S.events.push("gulp-leave"); }
+  else { S.power = Math.max(0.5, S.power - 2); S.events.push("popcorn-waste"); }
+}
+// Picking Hue's colour: the right one sends her back, a wrong one makes her come at you sooner.
+function paint(S, k) {
+  const h = S.hue;
+  if (h.i !== 2) return;
+  if (k === h.col) { h.i = 0; h.clock = 0; S.events.push("hue-leave"); }
+  else { h.winT += 2.5; S.events.push("hue-wrong"); }
+}
+
+function step(S, dt, rnd) {
+  if (S.over || S.won) return;
+  S.t += dt;
+  S.glitch = Math.max(0, S.glitch - dt);
+  if (S.t >= NIGHT_LEN) { S.won = true; S.events.push("6am"); return; }
+  if (S.out) {
+    S.out.t += dt;
+    if (S.out.t >= S.out.kill) lose(S, "power");
+    return;
+  }
+  S.power -= dt * (S.ch === 2 ? DRAIN2[S.night] : DRAIN) * usage(S);
+  if (S.power <= 0) {
+    S.power = 0;
+    S.out = { t: 0, kill: 7 + rnd() * 12 };
+    S.doorL = S.doorR = S.lightL = S.lightR = S.winLight = S.hatch = S.cams = S.lamp = false;
+    S.events.push("powerout");
+    return;
+  }
+  if (bopStep(S, dt, rnd)) return;
+  if (S.ch === 2) return step2(S, dt, rnd);
+  const ai = S.ai, watching = c => S.cams && S.cam === c;
+
+  // Pippa only moves while her camera isn't being watched. At the window, light her up to send her back.
+  const p = S.pip;
+  if (ai[1] > 0) {
+    if (p.i < 3) {
+      const c = PIP_CAM[PIP_PATH[p.i]];
+      if (!watching(c)) {
+        p.clock += dt;
+        if (p.clock >= 4.5) {
+          p.clock -= 4.5;
+          if (rnd() * 20 < ai[1]) {
+            p.i++;
+            S.events.push(p.i === 3 ? "pip-window" : "pip-move");
+            glitch(S, c, PIP_CAM[PIP_PATH[p.i]]);
+            if (p.i === 3) { p.winT = 0; p.push = 0; }
+          }
+        }
+      }
+    } else {
+      p.winT += dt;
+      if (S.winLight) {
+        p.push += dt;
+        if (p.push >= 2.2) { p.i = 0; p.clock = 0; S.events.push("pip-leave"); }
+      } else if (p.winT >= pipWait(ai[1])) return lose(S, "pip");
+    }
+  }
+
+  // Rattles crawls the vent: far → middle → at the grate. The hatch has to be shut when he gets there.
+  const r = S.rat;
+  if (ai[2] > 0) {
+    if (r.i < 2) {
+      r.clock += dt;
+      if (r.clock >= 5.3) {
+        r.clock -= 5.3;
+        if (rnd() * 20 < ai[2]) {
+          r.i++;
+          S.events.push("rattle" + r.i);
+          glitch(S, 9, 9);
+          if (r.i === 2) r.nearT = 0;
+        }
+      }
+    } else {
+      r.nearT += dt;
+      if (r.nearT >= ratWait(ai[2])) {
+        if (S.hatch) { r.i = 0; r.clock = 0; S.events.push("rat-leave"); }
+        else return lose(S, "rat");
+      }
+    }
+  }
+
+  // Zoom creeps out from behind the pit garage door when Cam 4 is ignored (watching it holds him a moment), then races the East Hall.
+  const z = S.zoom;
+  if (ai[3] > 0) {
+    if (z.st < 3) {
+      if (watching(4)) z.lock = 1.5 + rnd() * 2;
+      else if (z.lock > 0) z.lock -= dt;
+      else {
+        z.clock += dt;
+        if (z.clock >= 5) {
+          z.clock -= 5;
+          if (rnd() * 20 < ai[3]) {
+            z.st++;
+            S.events.push("zoom" + z.st);
+            if (z.st === 3) { z.runT = 0; S.events.push("zoom-run"); glitch(S, 4, 6); }
+          }
+        }
+      }
+    } else {
+      z.runT += dt;
+      if (z.runT >= zoomRun(ai[3])) {
+        if (S.doorR) {
+          S.power = Math.max(0.5, S.power - 4);
+          S.bangs++;
+          z.st = rnd() < 0.5 ? 0 : 1; z.clock = 0; z.runT = 0;
+          S.events.push("bang");
+        } else return lose(S, "zoom");
+      }
+    }
+  }
+}
+
+// Seeded random (mulberry32) for repeatable sims and ?seed= runs.
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+
+// Bot players for balance checks. "good" reacts to what a careful player can see or hear, with human reaction delays.
+const POLICIES = {
+  idle() {},
+  good(S, m, dt, rnd) {
+    const office = () => { if (S.cams) { S.cams = false; m.look = 0; } };
+    const later = (k, lo, hi) => (m[k] ??= lo + rnd() * (hi - lo)) - dt <= 0 ? (m[k] = null, true) : (m[k] -= dt, false);
+    // left light peeks every few seconds; a peek takes 0.5 s
+    if (m.peek > 0) { m.peek -= dt; office(); S.lightL = true; if (m.peek <= 0) S.lightL = false; }
+    else if (!S.cams && (later("lc", 2.5, 5) || (m.heard && later("hd", 0.4, 1.5)))) { m.peek = 0.5; m.heard = false; m.lc = null; if (S.bop.i === 4) m.seenBop = true; }
+    if (S.bop.i === 4 && m.bopWas !== 4) m.heard = true; // footsteps on the left
+    m.bopWas = S.bop.i;
+    if (m.seenBop && !S.doorL && later("cl", 0.3, 1)) { office(); S.doorL = true; m.seenBop = false; }
+    if (S.doorL && S.bop.i !== 4 && later("ol", 0.6, 1.6)) { office(); S.doorL = false; }
+    // Pippa's face shows faintly in the window; Rattles shakes the grate
+    // (on the tablet you only notice them by sound, so reactions are slower)
+    if (S.pip.i === 3) { if (!S.winLight && later("pw", 0.6, S.cams ? 2.4 : 1.6)) { office(); S.winLight = true; } } else { m.pw = null; S.winLight = false; }
+    if (S.rat.i === 2) { if (!S.hatch && later("rh", 0.6, S.cams ? 2.4 : 2)) { office(); S.hatch = true; } } else { m.rh = null; if (S.hatch && later("ro", 0.3, 1)) { office(); S.hatch = false; } }
+    // a quick look at Cam 4 every 9–15 s
+    if (m.look > 0) { m.look -= dt; if (m.look <= 0) S.cams = false; }
+    else if (S.ai[3] > 0 && !S.winLight && !(m.peek > 0) && later("zc", 9, 15)) { S.cams = true; S.cam = 4; m.look = 1.5; S.lightL = S.lightR = false; }
+    // racing skates: drop the tablet, shut the right door
+    if (S.zoom.st === 3 && !S.doorR && later("zr", 0.7, S.cams ? 1.8 : 1.4)) { office(); S.doorR = true; }
+    if (S.doorR && S.zoom.st < 3 && later("zo", 0.4, 1)) { office(); S.doorR = false; }
+  },
+  turtle(S) { // both doors and the hatch shut all night, window light when needed
+    S.doorL = S.doorR = S.hatch = true; S.winLight = S.pip.i === 3;
+  },
+};
+// Chapter 2 bots. Same honesty rules: they act on footsteps, chomping, the shimmer at the window and fluttering,
+// read Hue's colour only with the projector on, and see Gulp on the Aisle only by looking at Cam 6.
+const POLICIES2 = {
+  idle() {},
+  good(S, m, dt, rnd) {
+    const office = () => { if (S.cams) { S.cams = false; m.look = 0; } };
+    const later = (k, lo, hi) => (m[k] ??= lo + rnd() * (hi - lo)) - dt <= 0 ? (m[k] = null, true) : (m[k] -= dt, false);
+    const lumi = S.lumi.i === 2; // fluttering at the projector: no light, no tablet
+    if (S.bop.i === 4 && m.bopWas !== 4) m.heard = true; // footsteps on the left
+    m.bopWas = S.bop.i;
+    // left light peeks every few seconds, but never while Lumi's at the projector; then footsteps alone shut the door
+    if (m.peek > 0) { m.peek -= dt; office(); S.lightL = !lumi; if (m.peek <= 0 || lumi) { S.lightL = false; m.peek = 0; } }
+    else if (!S.cams && !lumi && (later("lc", 2.5, 5) || (m.heard && later("hd", 0.4, 1.5)))) { m.peek = 0.5; m.heard = false; m.lc = null; if (S.bop.i === 4) m.seenBop = true; }
+    if (lumi && m.heard && !S.doorL && later("bd", 0.4, 1.2)) { m.seenBop = true; m.heard = false; }
+    if (m.seenBop && !S.doorL && later("cl", 0.3, 1)) { office(); S.doorL = true; m.seenBop = false; }
+    if (S.doorL && S.bop.i !== 4 && later("ol", 0.6, 1.6)) { office(); S.doorL = false; }
+    // Lumi: projector off, tablet down, hands off the light
+    if (lumi && (S.lamp || S.cams || S.lightL)) { if (later("lu", 0.5, S.cams ? 1.8 : 1.3)) { office(); S.lamp = false; S.lightL = false; m.peek = 0; } }
+    else m.lu = null;
+    if (!lumi && !S.lamp && later("lo", 0.6, 1.6)) S.lamp = true;
+    // Hue: notice the shimmer, read her colour by projector light, click it
+    if (S.hue.i === 2 && S.lamp) { if (later("hu", 0.8, S.cams ? 2.2 : 1.6)) { office(); paint(S, S.hue.col); } }
+    else m.hu = null;
+    // Gulp: a look at the Aisle (Cam 6) every 7–12 s, popcorn if he's on it; chomping at the chute means popcorn now
+    if (m.look > 0) { m.look -= dt; if (S.gulp.i === 2 && m.look < 1) { office(); feed(S); } if (m.look <= 0) S.cams = false; }
+    else if (S.ai[1] > 0 && !lumi && S.hue.i !== 2 && !(m.peek > 0) && later("gc", 7, 12)) { S.cams = true; S.cam = 6; m.look = 1.4; S.lightL = false; }
+    if (S.gulp.i === 3) { if (later("gf", 0.5, S.cams ? 1.4 : 1.1)) { office(); feed(S); } } else m.gf = null;
+  },
+  turtle(S) { // the left door shut all night, and everyone else handled perfectly
+    S.doorL = true; S.lamp = S.lumi.i !== 2;
+    if (S.gulp.i === 3) feed(S);
+    if (S.hue.i === 2) paint(S, S.hue.col);
+  },
+};
+function sim(night, policy = "good", seed = 1, ai, ch = 1) {
+  ai ??= (ch === 2 ? NIGHTS2 : NIGHTS)[night];
+  const S = newNight(night, ai, ch), rnd = rng(seed), m = {}, pol = (ch === 2 ? POLICIES2 : POLICIES)[policy];
+  while (!S.over && !S.won) { pol(S, m, 0.05, rnd); step(S, 0.05, rnd); S.events.length = 0; }
+  return { won: S.won, over: S.over, t: Math.round(S.t), power: Math.round(S.power) };
+}
+
+// ======================================================================================
+// Drawing. Everything is drawn in code; all characters and places are original.
+// ======================================================================================
+const cv = document.getElementById("cv");
+let ctx = cv.getContext("2d");
+const TAU = Math.PI * 2;
+function ell(x, y, rx, ry, fill, rot = 0) { ctx.beginPath(); ctx.ellipse(x, y, Math.abs(rx), Math.abs(ry), rot, 0, TAU); ctx.fillStyle = fill; ctx.fill(); }
+function rect(x, y, w, h, fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
+function rr(x, y, w, h, r, fill) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fillStyle = fill; ctx.fill(); }
+function poly(pts, fill) { ctx.beginPath(); ctx.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); }
+function line(x1, y1, x2, y2, color, w) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.stroke(); }
+function text(s, x, y, size, color, align = "center", font = "bold") { ctx.font = `${font} ${size}px "Trebuchet MS", system-ui, sans-serif`; ctx.textAlign = align; ctx.textBaseline = "middle"; ctx.fillStyle = color; ctx.fillText(s, x, y); }
+function neon(s, x, y, size, color) { ctx.save(); ctx.shadowColor = color; ctx.shadowBlur = 22; text(s, x, y, size, color); ctx.shadowBlur = 6; text(s, x, y, size, "#fff"); ctx.restore(); }
+
+// eyes: o.glow makes them shine in the dark; o.only draws nothing but the eyes
+function eyeball(x, y, r, o, pupil = "#111") {
+  if (o.scary) { ell(x, y, r * 1.1, r * 1.1, "#000"); ctx.save(); ctx.shadowColor = "#ff2a2a"; ctx.shadowBlur = 30; ell(x, y, r * 0.22, r * 0.22, "#fff"); ctx.restore(); return; }
+  if (o.glow) { ctx.save(); ctx.shadowColor = o.glowColor || "#fff"; ctx.shadowBlur = 24; ell(x, y, r, r, "#fff"); ctx.restore(); ell(x, y, r * 0.32, r * 0.32, pupil); }
+  else { ell(x, y, r, r, "#fff"); ell(x, y, r * 0.36, r * 0.36, pupil); }
+}
+function skate(x, y, boot, wheel) {
+  rr(x - 30, y - 40, 56, 30, 10, boot); rr(x - 30, y - 18, 60, 8, 4, "#ccc");
+  ell(x - 18, y - 4, 9, 9, wheel); ell(x + 18, y - 4, 9, 9, wheel);
+}
+
+// ---- Bopper: big purple hippo DJ on skates
+const BP = "#d9579b", BPL = "#f29cc6", BPD = "#8a2a5c";
+function bopperHead(o = {}) {
+  if (o.only) { eyeball(-30, -22, 15, o); eyeball(30, -22, 15, o); return; }
+  ell(-56, -62, 19, 17, BP); ell(56, -62, 19, 17, BP); ell(-56, -62, 9, 8, "#8a2a5c"); ell(56, -62, 9, 8, "#8a2a5c");
+  ctx.beginPath(); ctx.arc(0, -8, 88, Math.PI * 1.1, Math.PI * 1.9); ctx.strokeStyle = "#36d6c9"; ctx.lineWidth = 13; ctx.stroke();
+  ell(0, -10, 82, 64, BP);
+  ell(0, 40, 94, 52, BPL);
+  ell(-28, 22, 9, 7, BPD); ell(28, 22, 9, 7, BPD);
+  rr(-102, -34, 28, 54, 10, "#36d6c9"); rr(74, -34, 28, 54, 10, "#36d6c9");
+  eyeball(-30, -22, 15, o); eyeball(30, -22, 15, o);
+  if (o.specs && !o.scary) { // 3D glasses at the cinema
+    ctx.save(); ctx.globalAlpha = o.glow ? 0.55 : 0.8;
+    rr(-58, -44, 54, 42, 8, "#ff3b4e"); rr(4, -44, 54, 42, 8, "#36d6e8"); ctx.restore();
+    rect(-4, -30, 8, 6, "#fff"); line(-58, -30, -84, -40, "#fff", 5); line(58, -30, 84, -40, "#fff", 5);
+  }
+  if (o.open) {
+    ell(0, 66, 70, o.open * 46 + 10, "#250a2e");
+    for (let i = -3; i <= 3; i++) { poly([i * 18 - 9, 50 - o.open * 22, i * 18 + 9, 50 - o.open * 22, i * 18, 76 - o.open * 18], "#fffbea"); poly([i * 18 - 9, 84 + o.open * 22, i * 18 + 9, 84 + o.open * 22, i * 18, 60 + o.open * 18], "#fffbea"); }
+  } else { ctx.beginPath(); ctx.arc(0, 48, 40, 0.15 * Math.PI, 0.85 * Math.PI); ctx.strokeStyle = BPD; ctx.lineWidth = 6; ctx.stroke(); }
+}
+function drawBopper(x, y, s, o = {}) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  if (!o.only) {
+    rr(-64, -76, 42, 60, 14, BP); rr(22, -76, 42, 60, 14, BP);
+    skate(-42, 0, "#fff", "#e2455b"); skate(44, 0, "#fff", "#e2455b");
+    ell(-96, -176, 26, 62, BP, 0.35); ell(96, -176, 26, 62, BP, -0.35);
+    ell(0, -158, 98, 104, BP); ell(0, -142, 64, 76, BPL);
+    ctx.beginPath(); ctx.arc(0, -214, 46, 0.1 * Math.PI, 0.9 * Math.PI); ctx.strokeStyle = "#f4c542"; ctx.lineWidth = 6; ctx.stroke();
+    ell(0, -160, 26, 26, "#1a1a1a"); ell(0, -160, 9, 9, "#f4c542");
+  }
+  ctx.translate(0, -282); bopperHead({ specs: G.ch === 2, ...o });
+  ctx.restore();
+}
+
+// ---- Pippa: porcelain figure-skating doll
+const PSK = "#f3e6dc";
+function pippaHead(o = {}) {
+  if (o.only) { eyeball(-17, -6, 10, o, "#000"); eyeball(17, -6, 10, o, "#000"); return; }
+  ell(0, -62, 26, 22, "#8c2f39");
+  ell(0, -4, 50, 54, PSK);
+  ctx.beginPath(); ctx.ellipse(0, -18, 52, 42, 0, Math.PI, TAU); ctx.fillStyle = "#8c2f39"; ctx.fill();
+  ell(-30, 16, 9, 7, "#f29bb0"); ell(30, 16, 9, 7, "#f29bb0");
+  if (o.glow) { eyeball(-17, -2, 11, o, "#000"); eyeball(17, -2, 11, o, "#000"); }
+  else { ell(-17, -2, 10, 11, "#111"); ell(17, -2, 10, 11, "#111"); ell(-14, -6, 3, 3, "#fff"); ell(20, -6, 3, 3, "#fff"); }
+  if (o.open) {
+    line(-6, -50, 6, -20, "#5b4b44", 3); line(6, -20, -4, 0, "#5b4b44", 3);
+    ell(0, 30, 18, 8 + o.open * 18, "#2a0a12");
+    for (let i = -2; i <= 2; i++) rect(i * 6 - 2, 22 - o.open * 4, 4, 7, "#fff");
+  } else ell(0, 28, 7, 4, "#c0283b");
+}
+function drawPippa(x, y, s, o = {}) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  if (!o.only) {
+    rr(-24, -118, 13, 104, 6, PSK); rr(11, -118, 13, 104, 6, PSK);
+    skate(-20, 0, "#fff", "#9be7ff"); skate(20, 0, "#fff", "#9be7ff");
+    line(-24, -186, -78, -238, PSK, 10); line(24, -186, 82, -226, PSK, 10);
+    rr(-28, -196, 56, 76, 18, "#2bb3a3");
+    ell(0, -124, 76, 22, "#69e0d2"); ell(0, -128, 62, 16, "#2bb3a3");
+    rr(-6, -206, 12, 14, 4, PSK);
+  }
+  ctx.translate(0, -252); pippaHead(o);
+  ctx.restore();
+}
+
+// ---- Rattles: robot raccoon with a springy eye
+const RG = "#8f96a3", RGD = "#5c626e";
+function rattlesHead(o = {}) {
+  const t = o.t || 0;
+  if (o.only) { eyeball(-24, -4, 12, { ...o, glowColor: "#ffe066" }, "#7a0000"); eyeball(26, 26 + Math.sin(t * 9) * 5, 10, { ...o, glowColor: "#ffe066" }, "#7a0000"); return; }
+  poly([-70, -30, -52, -86, -24, -44], RG); poly([70, -30, 52, -86, 24, -44], RG);
+  poly([-62, -40, -52, -72, -34, -46], "#2a2d33"); poly([62, -40, 52, -72, 34, -46], "#2a2d33");
+  ell(0, 0, 76, 62, RG);
+  ell(0, -4, 70, 22, "#1b1c22");
+  ell(0, 34, 40, 26, "#e9ecef");
+  ell(0, 18, 11, 8, "#111");
+  eyeball(-24, -4, 12, { ...o, glowColor: "#ffe066" }, "#7a0000");
+  ctx.save(); ctx.strokeStyle = "#c9ced6"; ctx.lineWidth = 3; ctx.beginPath();
+  for (let i = 0; i <= 8; i++) { const yy = -4 + i * 3.6; ctx.lineTo(24 + (i % 2 ? 6 : -6), yy); } ctx.stroke(); ctx.restore();
+  eyeball(26, 26 + Math.sin(t * 9) * 5, 10, { ...o, glowColor: "#ffe066" }, "#7a0000");
+  ell(-52, 14, 5, 5, "#c9ced6"); ell(52, 14, 5, 5, "#c9ced6");
+  if (o.open) {
+    ell(0, 52, 40, 10 + o.open * 26, "#1a0606");
+    for (let i = -3; i <= 3; i++) poly([i * 11 - 5, 40, i * 11 + 5, 40, i * 11, 52 + o.open * 8], "#d8dde4");
+  } else line(-16, 48, 16, 48, "#333", 4);
+}
+function drawRattles(x, y, s, o = {}) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  if (!o.only) {
+    for (let i = 0; i < 5; i++) ell(110 + i * 26, -50 - i * 14, 22, 18, i % 2 ? "#2a2d33" : RG, -0.5);
+    ell(30, -50, 100, 48, RG);
+    rr(-40, -30, 24, 34, 8, RGD); rr(60, -30, 24, 34, 8, RGD);
+  }
+  ctx.translate(-70, -76); rattlesHead(o);
+  ctx.restore();
+}
+
+// ---- Zoom: roller-derby cheetah with a lightning helmet
+const ZO = "#e8b23a";
+function zoomHead(o = {}) {
+  const eyes = () => { eyeball(-24, -6, 12, { ...o, glowColor: "#ffb020" }, "#3a2000"); eyeball(24, -6, 12, { ...o, glowColor: "#ffb020" }, "#3a2000"); };
+  if (o.only) return eyes();
+  ell(-50, -40, 16, 16, ZO); ell(50, -40, 16, 16, ZO); ell(-50, -40, 8, 8, "#3a2a10"); ell(50, -40, 8, 8, "#3a2a10");
+  ell(0, 4, 64, 58, ZO);
+  for (const [x, y] of [[-44, 10], [44, 10], [-36, 32], [36, 32], [-52, -10], [52, -10]]) ell(x, y, 5, 4, "#3a2a10");
+  ctx.beginPath(); ctx.ellipse(0, -22, 68, 46, 0, Math.PI, TAU); ctx.fillStyle = "#d62839"; ctx.fill();
+  poly([6, -66, -12, -34, 2, -34, -8, -8, 18, -42, 4, -42], "#ffd84d");
+  ell(0, 34, 34, 26, "#fff4e6");
+  line(-30, 2, -22, 38, "#1a1208", 5); line(30, 2, 22, 38, "#1a1208", 5);
+  poly([-10, 20, 10, 20, 0, 30], "#1a1208");
+  eyes();
+  if (o.open) {
+    ell(0, 54, 30, 8 + o.open * 26, "#2a0606");
+    poly([-18, 46, -10, 46, -14, 64], "#fff"); poly([18, 46, 10, 46, 14, 64], "#fff");
+  } else { ctx.beginPath(); ctx.moveTo(-16, 42); ctx.quadraticCurveTo(0, 52, 16, 42); ctx.strokeStyle = "#1a1208"; ctx.lineWidth = 4; ctx.stroke(); }
+}
+function drawZoom(x, y, s, o = {}) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  if (o.lean) ctx.rotate(o.lean);
+  if (!o.only) {
+    for (let i = 0; i < 5; i++) ell(56 + i * 18, -104 - i * 16, 13, 13, i % 2 ? "#1a1208" : ZO);
+    ell(146, -186, 12, 12, "#1a1208");
+    rr(-40, -112, 30, 100, 12, ZO); rr(10, -112, 30, 100, 12, ZO);
+    for (const [xx, yy] of [[-30, -40], [20, -36], [-22, -100], [28, -96]]) ell(xx, yy, 4, 4, "#3a2a10");
+    rr(-44, -84, 38, 24, 8, "#222"); rr(6, -84, 38, 24, 8, "#222");
+    skate(-24, 0, "#222", "#ffd84d"); skate(28, 0, "#222", "#ffd84d");
+    ell(-70, -168, 18, 50, ZO, 0.5); ell(70, -168, 18, 50, ZO, -0.5);
+    rr(-56, -222, 112, 116, 30, "#1f9e8f");
+    text("88", 0, -166, 46, "#ffd84d");
+  }
+  ctx.translate(0, -268); zoomHead(o);
+  ctx.restore();
+}
+// ---- Gulp: pelican usher with a popcorn pouch, red cap and a flashlight
+const GW = "#f4efe6", GO = "#f39a2b", GOD = "#b8600e";
+function gulpHead(o = {}) {
+  const eyes = () => { eyeball(-24, -26, 12, { ...o, glowColor: "#9be7ff" }, "#0a2a3a"); eyeball(24, -26, 12, { ...o, glowColor: "#9be7ff" }, "#0a2a3a"); };
+  if (o.only) return eyes();
+  ell(0, -14, 58, 54, GW);
+  rr(-40, -92, 80, 34, 8, "#c0283b"); rect(-50, -62, 100, 10, "#8a1a28"); ell(0, -78, 8, 8, "#ffd84d");
+  eyes();
+  if (o.open) {
+    poly([-32, 4, 32, 4, 26, 22, -26, 22], GO);
+    ell(0, 34 + o.open * 40, 50, 12 + o.open * 50, "#2a0a06");
+    for (let i = 0; i < 7; i++) ell(-30 + i * 10, 40 + o.open * 70 + (i % 2) * 10, 7, 6, "#fff6c4");
+  } else {
+    poly([-30, 0, 30, 0, 12, 96, -12, 96], GO);
+    ell(0, 62, 32, 30, "#f6b65c"); line(0, 4, 0, 92, GOD, 3);
+    for (let i = 0; i < 3; i++) ell(-10 + i * 10, 66 + (i % 2) * 6, 5, 4, "#fff6c4");
+  }
+}
+function drawGulp(x, y, s, o = {}) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  if (!o.only) {
+    rr(-30, -64, 14, 62, 6, GO); rr(16, -64, 14, 62, 6, GO);
+    ell(-30, -4, 26, 9, GO); ell(30, -4, 26, 9, GO);
+    ell(-86, -150, 28, 76, GW, 0.3); ell(86, -150, 28, 76, GW, -0.3);
+    rr(98, -128, 18, 46, 4, "#333"); ell(107, -82, 11, 5, "#fff6a0");
+    ell(0, -140, 78, 96, GW);
+    rr(-54, -200, 108, 116, 30, "#c0283b"); ell(0, -158, 28, 62, GW);
+    poly([-22, -214, 0, -204, -22, -194], "#ffd84d"); poly([22, -214, 0, -204, 22, -194], "#ffd84d"); ell(0, -204, 6, 6, "#ffd84d");
+    for (const yy of [-176, -150, -124]) ell(-40, yy, 4, 4, "#ffd84d");
+    rr(-17, -262, 34, 74, 15, GW);
+  }
+  ctx.translate(0, -286); gulpHead(o);
+  ctx.restore();
+}
+
+// ---- Hue: chameleon who glows red, green or blue (o.col), with turret eyes and a curly tail
+const HUE_COLS = ["#ff4d5e", "#4ddb6a", "#4d8dff"], HUE_WORDS = ["RED", "GREEN", "BLUE"];
+function hueColour(o) { return o.col != null ? HUE_COLS[o.col] : (o.tint || "#8fb89a"); }
+function hueHead(o = {}) {
+  const c = hueColour(o);
+  const eyes = () => { eyeball(-36, -12, 18, { ...o, glowColor: o.col != null ? c : "#fff" }, "#111"); eyeball(36, -12, 18, { ...o, glowColor: o.col != null ? c : "#fff" }, "#111"); };
+  if (o.only) return eyes();
+  poly([-62, -26, 0, -86, 62, -26], c);
+  ell(0, 4, 74, 56, c);
+  ctx.save(); ctx.globalAlpha = 0.25; ell(-36, -12, 28, 28, "#000"); ell(36, -12, 28, 28, "#000"); ell(0, -50, 30, 10, "#000"); ctx.restore();
+  for (let i = 0; i < 4; i++) ell(-30 + i * 20, 30, 6, 4, "rgba(255,255,255,.35)");
+  eyes();
+  if (o.open) {
+    ell(0, 36, 50, 8 + o.open * 26, "#2a0610");
+    line(0, 40, 0, 40 + o.open * 110, "#ff7aa8", 16); ell(0, 44 + o.open * 116, 20, 16, "#ff7aa8");
+  } else { ctx.beginPath(); ctx.arc(0, 18, 40, 0.2 * Math.PI, 0.8 * Math.PI); ctx.strokeStyle = "rgba(0,0,0,.45)"; ctx.lineWidth = 5; ctx.stroke(); }
+}
+function drawHue(x, y, s, o = {}) {
+  const c = hueColour(o);
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  if (!o.only) {
+    ctx.beginPath(); ctx.arc(-150, -110, 46, Math.PI * 0.1, Math.PI * 1.9); ctx.strokeStyle = c; ctx.lineWidth = 20; ctx.lineCap = "round"; ctx.stroke();
+    for (const lx of [-70, -20, 40, 90]) { rr(lx - 10, -90, 20, 84, 8, c); ell(lx, -6, 18, 8, c); }
+    ell(0, -120, 120, 56, c);
+    ctx.save(); ctx.globalAlpha = 0.25; for (let i = 0; i < 6; i++) ell(-80 + i * 32, -140, 12, 26, "#000"); ctx.restore();
+    poly([-90, -170, -40, -186, 10, -176, 60, -184, 100, -168, 80, -150, -80, -150], c);
+  }
+  ctx.translate(120, -176); hueHead(o);
+  ctx.restore();
+}
+
+// ---- Lumi: fuzzy glow moth with feathery antennae. (x, y) is her middle; she flies.
+function lumiHead(o = {}) {
+  const eyes = () => { eyeball(-24, -6, 17, { ...o, glowColor: "#e8f59a" }, "#2a1a4a"); eyeball(24, -6, 17, { ...o, glowColor: "#e8f59a" }, "#2a1a4a"); };
+  if (o.only) return eyes();
+  for (const sx of [-1, 1]) {
+    line(sx * 14, -40, sx * 52, -104, "#7a6a9a", 4);
+    for (let i = 1; i < 6; i++) { const px = sx * (14 + i * 7.6), py = -40 - i * 12.8; line(px, py, px + sx * 14, py + 6, "#7a6a9a", 3); line(px, py, px - sx * 4, py - 12, "#7a6a9a", 3); }
+  }
+  ell(0, 34, 70, 30, "#f3eaff");
+  ell(0, 0, 54, 48, "#cdb8ff");
+  eyes();
+  if (o.open) { ell(0, 30, 26, 6 + o.open * 22, "#2a1030"); poly([-14, 24, -8, 24, -11, 36], "#fff"); poly([14, 24, 8, 24, 11, 36], "#fff"); }
+  else ell(0, 26, 8, 4, "#7a5aa8");
+}
+function drawLumi(x, y, s, o = {}) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  if (!o.only) {
+    const f = 0.55 + 0.45 * Math.abs(Math.sin((o.t || 0) * 16));
+    ctx.save(); ctx.shadowColor = "#e8f59a"; ctx.shadowBlur = o.glow ? 40 : 10;
+    for (const sx of [-1, 1]) {
+      ctx.save(); ctx.scale(sx * f, 1);
+      ell(80, -24, 90, 58, "#e8f59a", -0.35); ell(70, 46, 60, 40, "#d6e87a", 0.4);
+      ell(92, -28, 26, 22, "#b18cff"); ell(92, -28, 11, 10, "#2a1a4a");
+      ctx.restore();
+    }
+    ctx.restore();
+    ell(0, 30, 26, 64, "#cdb8ff");
+    for (let i = 0; i < 4; i++) rect(-22, 10 + i * 18, 44, 5, "rgba(122,90,168,.5)");
+  }
+  ctx.translate(0, -56); lumiHead(o);
+  ctx.restore();
+}
+
+const HEADS = { bop: bopperHead, pip: pippaHead, rat: rattlesHead, zoom: zoomHead, power: bopperHead, gulp: gulpHead, hue: hueHead, lumi: lumiHead };
+// Bopper wears his 3D glasses whenever he's at the cinema (Chapter 2)
+function head(who, x, y, s, o = {}) { ctx.save(); ctx.translate(x, y); ctx.scale(s, s); HEADS[who]({ specs: G.ch === 2, ...o }); ctx.restore(); }
+
+// ---- noise and scanline overlays for the cameras
+const NOISE = [0, 1, 2].map(() => {
+  const c = document.createElement("canvas"); c.width = 320; c.height = 180;
+  const g = c.getContext("2d"), d = g.createImageData(320, 180);
+  for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  g.putImageData(d, 0, 0); return c;
+});
+const SCAN = (() => {
+  const c = document.createElement("canvas"); c.width = 4; c.height = 4; const g = c.getContext("2d");
+  g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(0, 0, 4, 2); return ctx.createPattern(c, "repeat");
+})();
+
+// ---- camera scenes (1600×900)
+function floorTiles(y0, c1, c2) {
+  for (let r = 0; r < 8; r++) {
+    const ya = y0 + (900 - y0) * Math.pow(r / 8, 1.6), yb = y0 + (900 - y0) * Math.pow((r + 1) / 8, 1.6);
+    for (let c = -10; c < 10; c++) {
+      const wa = 1 + (ya - y0) / 180, wb = 1 + (yb - y0) / 180, cw = 90;
+      ctx.beginPath(); ctx.moveTo(800 + c * cw * wa, ya); ctx.lineTo(800 + (c + 1) * cw * wa, ya); ctx.lineTo(800 + (c + 1) * cw * wb, yb); ctx.lineTo(800 + c * cw * wb, yb); ctx.closePath();
+      ctx.fillStyle = (r + c) % 2 ? c1 : c2; ctx.fill();
+    }
+  }
+}
+function hallway(wall, poster, word = "SKATE!") {
+  rect(0, 0, 1600, 900, "#0e0a16");
+  poly([0, 0, 640, 300, 640, 560, 0, 900], wall); poly([1600, 0, 960, 300, 960, 560, 1600, 900], wall);
+  poly([0, 0, 1600, 0, 960, 300, 640, 300], "#151020");
+  poly([0, 900, 640, 560, 960, 560, 1600, 900], "#2a2233");
+  for (let i = 0; i < 6; i++) { const y = 560 + Math.pow(i / 6, 1.8) * 340; line(640 - (y - 560) * 1.88, y, 960 + (y - 560) * 1.88, y, "#3a3045", 3); }
+  rect(640, 300, 320, 260, "#05030a");
+  poly([150, 260, 330, 330, 330, 520, 150, 560], poster);
+  ctx.save(); ctx.globalAlpha = 0.8; text(word, 240, 420, 34, "#fff"); ctx.restore();
+  poly([1100, 360, 1240, 316, 1240, 600, 1100, 590], "#1d1626");
+  ell(800, 40, 120, 18, "rgba(255,240,180,.22)");
+}
+const SCENES = {
+  1(S, T) { // Stage
+    const g = ctx.createLinearGradient(0, 0, 0, 900); g.addColorStop(0, "#2a0f3d"); g.addColorStop(1, "#120818"); rect(0, 0, 1600, 900, g);
+    for (let i = 0; i < 12; i++) rect(i * 140, 0, 70, 600, "rgba(120,40,140,.35)");
+    rect(0, 600, 1600, 300, "#1f1428"); rect(0, 600, 1600, 14, "#ffd84d");
+    neon("BOPPER'S BEATS", 800, 110, 72, "#ff5fd2");
+    ell(800, 210, 50, 50, "#9aa"); for (let i = 0; i < 10; i++) rect(760 + (i % 5) * 16, 170 + Math.floor(i / 5) * 40, 12, 12, "#dff");
+    rr(500, 560, 600, 150, 16, "#2c2c3a"); ell(640, 590, 70, 18, "#111"); ell(960, 590, 70, 18, "#111");
+    if (S.bop.i === 0) drawBopper(800, 620, 1.2);
+    else { rr(690, 330, 220, 110, 12, "#f4efe3"); text("BACK IN 5", 800, 385, 40, "#a02040"); }
+  },
+  2(S) { // Rink floor
+    rect(0, 0, 1600, 900, "#0d0a18");
+    ell(800, 640, 900, 300, "#5a3a22"); ell(800, 640, 820, 250, "#7a5030");
+    for (let i = 0; i < 40; i++) ell((i * 397) % 1600, 520 + (i * 131) % 300, 8, 4, ["#ff5fd2", "#6ff3e8", "#ffe066"][i % 3]);
+    ctx.save(); ctx.strokeStyle = "#c9c2d6"; ctx.lineWidth = 10; ctx.beginPath(); ctx.ellipse(800, 600, 860, 280, 0, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke(); ctx.restore();
+    neon("ROLLAWAY RINK", 800, 120, 80, "#6ff3e8");
+    if (S.pip.i === 0) drawPippa(780, 600, 0.65);
+    if (S.pip.i === 1) drawPippa(470, 860, 1.25);
+  },
+  3(S) { // Snack bar
+    rect(0, 0, 1600, 900, "#1c1222"); floorTiles(620, "#1d1d24", "#d9d4c7");
+    rr(240, 80, 520, 200, 12, "#2a2a2a"); text("NACHOS  3", 500, 130, 40, "#ffe066"); text("PRETZELS  2", 500, 180, 40, "#ffe066"); text("SLUSHIES  2", 500, 230, 40, "#6ff3e8");
+    rr(1050, 260, 200, 300, 16, "#ddd"); rr(1075, 290, 70, 160, 10, "#3fa9ff"); rr(1155, 290, 70, 160, 10, "#ff4f6d");
+    if (S.bop.i === 1) drawBopper(780, 860, 1.25);
+    rect(0, 560, 1600, 200, "#7a2a3a"); rect(0, 560, 1600, 20, "#c9c2d6");
+  },
+  4(S, T) { // Pit Stop
+    rect(0, 0, 1600, 900, "#140c16"); rect(0, 640, 1600, 260, "#231b26");
+    rr(380, 140, 840, 520, 10, "#05030a");
+    neon("PIT STOP", 800, 90, 64, "#ffd84d");
+    const st = S.zoom.st, up = [0, 0.14, 0.5, 1][st];
+    for (let i = 0; i < 6; i++) rect(400 + i * 140, 600, 120, 60, i % 2 ? "#eee" : "#111");
+    if (st === 2) drawZoom(800, 700, 1.15, { lean: -0.12 });
+    if (st === 1) head("zoom", 800, 612, 0.7, { only: true, glow: true });
+    const dh = 520 * (1 - up);
+    if (dh > 0) { rect(380, 140, 840, dh, "#7d8591"); for (let y = 140 + 26; y < 140 + dh; y += 34) rect(380, y, 840, 5, "#5a616c"); rect(380, 140 + dh - 14, 840, 14, "#ffd84d"); }
+    if (st === 3) { ctx.save(); ctx.translate(800, 420); ctx.rotate(0.12); rr(-150, -40, 300, 80, 8, "#f4efe3"); text("PIT EMPTY", 0, 0, 38, "#a02040"); ctx.restore(); }
+  },
+  5(S) { hallway("#2b2440", "#ff5fd2"); if (S.bop.i === 3) drawBopper(780, 860, 1.05); },
+  6(S) {
+    hallway("#22303a", "#6ff3e8");
+    if (S.zoom.st === 3) {
+      const k = Math.min(1, S.zoom.runT / zoomRun(S.ai[3]));
+      for (let i = 0; i < 6; i++) line(500 + i * 120, 400 + k * 300, 500 + i * 120, 420 + k * 300 + 80, "rgba(255,255,255,.15)", 6);
+      drawZoom(800, 560 + k * 360, 0.4 + k * 1.3, { lean: -0.25 });
+    }
+  },
+  7(S) { // Skate rental
+    rect(0, 0, 1600, 900, "#141020");
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 9; c++) {
+      rr(140 + c * 150, 80 + r * 110, 130, 96, 6, "#2a2030");
+      skate(205 + c * 150, 160 + r * 110, ["#fff", "#ff5fd2", "#6ff3e8", "#ffe066"][(r + c) % 4], "#888");
+    }
+    rect(0, 560, 1600, 340, "#1e1826"); rect(0, 560, 1600, 70, "#3c2a4a"); text("SKATE RENTAL", 800, 595, 44, "#ffe066");
+    if (S.bop.i === 2) drawBopper(560, 900, 1.15);
+  },
+  8(S) { // Party room
+    rect(0, 0, 1600, 900, "#1a1030"); floorTiles(600, "#241a36", "#2f2446");
+    for (let i = 0; i < 12; i++) { const x = 120 + i * 120; line(x, 60, x + 60, 110, ["#ff5fd2", "#6ff3e8", "#ffe066"][i % 3], 10); }
+    text("HAPPY BIRTHDAY!", 800, 160, 64, "#ffe066");
+    for (const [x, c] of [[200, "#ff4f6d"], [300, "#3fa9ff"], [1350, "#7bd88f"], [1450, "#ffd84d"]]) { ell(x, 300, 50, 62, c); line(x, 362, x + 10, 560, "#ccc", 2); }
+    for (const x of [400, 1150]) { rr(x - 180, 620, 360, 40, 10, "#ececec"); rect(x - 150, 660, 20, 140, "#999"); rect(x + 130, 660, 20, 140, "#999"); poly([x - 60, 620, x - 30, 540, x, 620], "#ff5fd2"); poly([x + 40, 620, x + 70, 550, x + 100, 620], "#6ff3e8"); }
+    if (S.pip.i === 2) drawPippa(800, 820, 1.05);
+  },
+  9(S, T) { // Vents
+    rect(0, 0, 1600, 900, "#0a0b0e");
+    for (let i = 0; i < 8; i++) { const k = i / 8, w = 1500 * (1 - k * 0.85), h = 850 * (1 - k * 0.85); ctx.strokeStyle = `rgba(140,150,165,${0.5 - k * 0.4})`; ctx.lineWidth = 6 - i * 0.5; ctx.strokeRect(800 - w / 2, 450 - h / 2, w, h); }
+    line(50, 25, 740, 418, "#3a3f48", 4); line(1550, 25, 860, 418, "#3a3f48", 4); line(50, 875, 740, 482, "#3a3f48", 4); line(1550, 875, 860, 482, "#3a3f48", 4);
+    const i = S.rat.i, sh = i === 2 ? Math.sin(T * 40) * 6 : 0;
+    if (i === 0) head("rat", 800, 450, 0.3, { only: true, glow: true, t: T });
+    if (i === 1) drawRattles(860, 560, 0.9, { t: T });
+    if (i === 2) drawRattles(980 + sh, 900, 2.1, { t: T });
+    if (S.hatch) { ctx.save(); ctx.globalAlpha = 0.6; rect(0, 0, 1600, 900, "#444b55"); ctx.restore(); text("HATCH CLOSED", 800, 450, 70, "#ffe066"); }
+  },
+};
+const CAM_NAMES = { 1: "Stage", 2: "Rink Floor", 3: "Snack Bar", 4: "Pit Stop", 5: "West Hall", 6: "East Hall", 7: "Skate Rental", 8: "Party Room", 9: "Vents" };
+const CAM_POS = { 1: [203, 8], 3: [30, 56], 4: [376, 56], 2: [203, 98], 7: [30, 140], 8: [376, 140], 9: [203, 182], 5: [60, 224], 6: [346, 224] };
+
+// ---- Chapter 2 camera scenes: Starlite Cinema
+function seats(y0, rows, c) {
+  for (let r = 0; r < rows; r++) { const y = y0 + r * 70, w = 60 + r * 8; for (let x = 40 + (r % 2) * 30; x < 1600; x += w + 14) { rr(x, y, w, 56, 12, c); rr(x + 4, y - 24, w - 8, 34, 10, c); } }
+}
+// Hue blends in on the cameras: a faint, background-coloured outline
+function sneakyHue(x, y, s, tint) { ctx.save(); ctx.globalAlpha = 0.42; drawHue(x, y, s, { tint }); ctx.restore(); head("hue", x + 120 * s, y - 176 * s, s, { only: true, glow: true }); }
+const SCENES2 = {
+  1(S, T) { // Screen 1
+    rect(0, 0, 1600, 900, "#0b0714");
+    const g = ctx.createLinearGradient(0, 80, 0, 520); g.addColorStop(0, "#2b4a7a"); g.addColorStop(1, "#14223c"); rect(260, 80, 1080, 440, g);
+    ctx.save(); ctx.globalAlpha = 0.85; text("BOPPER: THE MOVIE", 800, 160, 64, "#ffe066"); text("coming soon!", 800, 230, 34, "#d8e8ff"); ctx.restore();
+    for (const sx of [0, 1]) { const x = sx ? 1340 : 0; rect(x, 0, 260, 900, "#7a1424"); for (let i = 0; i < 6; i++) rect(x + 20 + i * 40, 0, 14, 900, "rgba(0,0,0,.25)"); }
+    rect(260, 520, 1080, 70, "#3a1a2a"); rect(260, 520, 1080, 8, "#ffd84d");
+    if (S.bop.i === 0) drawBopper(800, 610, 1.0);
+    else { rr(690, 300, 220, 100, 12, "#f4efe3"); text("INTERMISSION", 800, 350, 30, "#a02040"); }
+    seats(640, 4, "#2a1a3a");
+  },
+  2(S) { // Lobby
+    rect(0, 0, 1600, 900, "#1a0d1e");
+    rect(0, 600, 1600, 300, "#6a1a2a"); for (let i = 0; i < 60; i++) ell((i * 211) % 1600, 620 + (i * 97) % 270, 6, 3, "#ffd84d");
+    neon("STARLITE", 800, 110, 84, "#ffd84d");
+    for (const [x, t] of [[240, "SPACE SNAIL"], [1360, "ROBO RODEO"]]) { rr(x - 110, 200, 220, 320, 8, "#2a2050"); text(t, x, 360, 26, "#ffe066"); }
+    if (S.hue.i === 1) sneakyHue(700, 830, 0.85, "#5a6a5a");
+    if (S.gulp.i === 1) drawGulp(300, 880, 1.05);
+  },
+  3(S) { // Snack Counter
+    rect(0, 0, 1600, 900, "#1c1222"); floorTiles(620, "#1d1d24", "#d9d4c7");
+    rr(240, 80, 520, 200, 12, "#2a2a2a"); text("POPCORN  4", 500, 130, 40, "#ffe066"); text("CANDY  2", 500, 180, 40, "#ffe066"); text("SODA  3", 500, 230, 40, "#6ff3e8");
+    for (let i = 0; i < 4; i++) { rr(1000 + i * 120, 300, 90, 120, 30, "rgba(200,230,255,.35)"); for (let k = 0; k < 6; k++) ell(1020 + i * 120 + (k % 3) * 24, 360 + Math.floor(k / 3) * 30, 9, 9, ["#ff4f6d", "#7bd88f", "#ffd84d", "#a78bfa"][(i + k) % 4]); }
+    if (S.bop.i === 1) drawBopper(780, 860, 1.25);
+    rect(0, 560, 1600, 200, "#7a2a3a"); rect(0, 560, 1600, 20, "#c9c2d6");
+  },
+  4(S, T) { // Popcorn Machine
+    rect(0, 0, 1600, 900, "#140c16"); rect(0, 640, 1600, 260, "#2a1d22");
+    rr(560, 120, 480, 520, 16, "#c0283b"); rr(590, 150, 420, 340, 10, "rgba(255,240,200,.18)");
+    for (let i = 0; i < 70; i++) ell(610 + (i * 53) % 380, 470 - (i * 29) % 160, 12, 10, "#fff6c4");
+    neon("POPCORN", 800, 80, 56, "#ffd84d");
+    if (S.gulp.i === 0) drawGulp(330, 880, 1.0);
+    else for (let i = 0; i < 14; i++) ell(120 + i * 40, 720 + Math.sin(i) * 30 + i * 8, 10, 8, "#fff6c4"); // a popcorn trail where he waddled off
+  },
+  5(S) { hallway("#2a1f3a", "#ffd84d", "NOW SHOWING"); if (S.bop.i === 3) drawBopper(780, 860, 1.05); },
+  6(S, T) { // the Aisle, down to your popcorn chute
+    rect(0, 0, 1600, 900, "#0c0812");
+    poly([620, 260, 980, 260, 1300, 900, 300, 900], "#5a1a2a");
+    for (let i = 0; i < 9; i++) { const k = i / 9, y = 270 + Math.pow(k, 1.4) * 620, w = 180 + k * 520; ell(800 - w, y, 6 + k * 6, 3 + k * 3, "#ffd84d"); ell(800 + w, y, 6 + k * 6, 3 + k * 3, "#ffd84d"); }
+    for (let r = 0; r < 6; r++) { const y = 300 + r * 100, s = 0.6 + r * 0.25; for (const sx of [-1, 1]) for (let k = 0; k < 4; k++) rr(800 + sx * (260 + r * 60 + k * 120 * s) - 40 * s, y, 80 * s, 70 * s, 10, "#2a1a3a"); }
+    text("▼ BOOTH", 800, 230, 30, "#ffe066");
+    if (S.gulp.i === 2) drawGulp(800, 840, 1.15);
+  },
+  7(S) { // Ticket Booth
+    rect(0, 0, 1600, 900, "#141020"); rect(0, 640, 1600, 260, "#2a1d30");
+    rr(520, 120, 560, 520, 20, "#7a1424"); rr(600, 200, 400, 240, 12, "#0b0b18"); neon("TICKETS", 800, 160, 46, "#ffe066");
+    for (const x of [200, 420, 1180, 1400]) { rect(x - 6, 560, 12, 160, "#d4af37"); ell(x, 556, 14, 14, "#d4af37"); }
+    line(200, 590, 420, 590, "#c0283b", 10); line(1180, 590, 1400, 590, "#c0283b", 10);
+    if (S.bop.i === 2) drawBopper(560, 900, 1.15);
+  },
+  8(S) { // Poster Hall
+    rect(0, 0, 1600, 900, "#140c1e"); floorTiles(640, "#1f1630", "#2b2044");
+    for (const [x, t, c] of [[260, "THE BIG SNEEZE", "#3a5a2a"], [800, "SPACE SNAIL", "#2a2a5a"], [1340, "ROBO RODEO", "#5a2a2a"]]) { rr(x - 160, 140, 320, 440, 10, "#d4af37"); rr(x - 145, 155, 290, 410, 6, c); text(t, x, 360, 28, "#fff"); }
+    if (S.hue.i === 0) sneakyHue(640, 760, 0.85, "#5a6a5a");
+  },
+  9(S, T) { // Rafters over the screen
+    rect(0, 0, 1600, 900, "#07050c");
+    for (let i = 0; i < 6; i++) { rect(0, 120 + i * 130, 1600, 22, "#1e1826"); rect(120 + i * 280, 0, 22, 900, "#1a1422"); }
+    ctx.save(); ctx.globalAlpha = 0.12; poly([1600, 120, 1600, 260, 0, 700, 0, 520], "#fff6c4"); ctx.restore();
+    const i = S.lumi.i;
+    if (i === 0) head("lumi", 1180, 220, 0.35, { only: true, glow: true });
+    if (i === 1) drawLumi(760 + Math.sin(T * 2) * 60, 480 + Math.sin(T * 3) * 30, 1.1, { t: T, glow: true });
+  },
+};
+const CAM_NAMES2 = { 1: "Screen 1", 2: "Lobby", 3: "Snack Counter", 4: "Popcorn Machine", 5: "West Hall", 6: "The Aisle", 7: "Ticket Booth", 8: "Poster Hall", 9: "Rafters" };
+
+function drawCams(S, T) {
+  (S.ch === 2 ? SCENES2 : SCENES)[S.cam](S, T);
+  ctx.save();
+  ctx.globalAlpha = 0.35; rect(0, 0, 1600, 900, "#02060a");
+  ctx.globalAlpha = 0.1 + S.glitch * 0.9; ctx.drawImage(NOISE[Math.floor(T * 20) % 3], 0, 0, 1600, 900);
+  ctx.globalAlpha = 1; ctx.fillStyle = SCAN; ctx.fillRect(0, 0, 1600, 900);
+  ctx.restore();
+  text(`CAM ${S.cam}  ${(S.ch === 2 ? CAM_NAMES2 : CAM_NAMES)[S.cam]}`, 40, 130, 40, "#fff", "left");
+  if (Math.floor(T * 2) % 2) ell(56, 180, 12, 12, "#ff3b3b");
+  text("REC", 78, 180, 26, "#fff", "left");
+  ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 4;
+  for (const [x, y, dx, dy] of [[20, 20, 1, 1], [1580, 20, -1, 1], [20, 880, 1, -1], [1580, 880, -1, -1]]) { ctx.beginPath(); ctx.moveTo(x, y + dy * 60); ctx.lineTo(x, y); ctx.lineTo(x + dx * 60, y); ctx.stroke(); }
+}
+
+// ---- the office
+const anim = { doorL: 0, doorR: 0, hatch: 0, fan: 0, reel: 0 };
+function shutter(x, w, k) {
+  if (k <= 0.01) return;
+  const h = 590 * k;
+  rect(x, 170, w, h, "#5d6470");
+  for (let y = 170; y < 170 + h - 10; y += 28) rect(x, y + 22, w, 4, "#454b55");
+  for (let i = 0; i < w; i += 40) poly([x + i, 170 + h - 34, x + i + 20, 170 + h - 34, x + i + 40, 170 + h, x + i + 20, 170 + h], "#ffd84d");
+  rect(x, 170 + h - 34, w, 4, "#222");
+}
+function drawOffice(S, T, dark) {
+  const g = ctx.createLinearGradient(0, 0, 0, 900); g.addColorStop(0, "#241b36"); g.addColorStop(1, "#16111f");
+  rect(0, 0, 1600, 900, g);
+  floorTiles(760, "#141016", "#cfc9bd");
+  rect(0, 150, 1600, 6, "#ff5fd2"); rect(0, 156, 1600, 3, "#6ff3e8");
+  // doorways
+  for (const [x, lit, side] of [[30, S.lightL, "L"], [1330, S.lightR, "R"]]) {
+    rect(x - 14, 160, 268, 610, "#3a2f4d");
+    if (lit && !dark) {
+      const lg = ctx.createLinearGradient(0, 170, 0, 760); lg.addColorStop(0, "#5a5030"); lg.addColorStop(1, "#2a2414"); rect(x, 170, 240, 590, lg);
+      line(x + 30, 760, x + 100, 420, "#4a4228", 3); line(x + 210, 760, x + 140, 420, "#4a4228", 3);
+      ctx.save(); ctx.beginPath(); ctx.rect(x, 170, 240, 590); ctx.clip();
+      if (side === "L" && S.bop.i === 4) drawBopper(x + 120, 900, 1.35);
+      if (side === "R" && S.zoom.st === 3) drawZoom(x + 120, 600 + Math.min(1, S.zoom.runT / zoomRun(S.ai[3])) * 300, 0.5 + Math.min(1, S.zoom.runT / zoomRun(S.ai[3])), { lean: 0.2 });
+      ctx.restore();
+    } else rect(x, 170, 240, 590, "#030205");
+  }
+  shutter(30, 240, anim.doorL); shutter(1330, 240, anim.doorR);
+  // window onto the rink
+  rr(590, 170, 420, 260, 10, "#3a2f4d");
+  const wg = ctx.createLinearGradient(0, 180, 0, 420); wg.addColorStop(0, "#0b1030"); wg.addColorStop(1, "#050712"); rect(605, 185, 390, 230, wg);
+  for (let i = 0; i < 8; i++) ell(640 + i * 50, 380 + (i % 2) * 14, 4, 2, ["#ff5fd2", "#6ff3e8", "#ffe066"][i % 3]);
+  if (S.pip.i === 3 && !dark) {
+    ctx.save(); ctx.beginPath(); ctx.rect(605, 185, 390, 230); ctx.clip();
+    ctx.globalAlpha = S.winLight ? 1 : 0.22 + 0.06 * Math.sin(T * 3);
+    drawPippa(800 + (S.winLight ? Math.min(1, S.pip.push / 2.2) * 160 : 0), 720, 1.45);
+    ctx.restore();
+  }
+  if (S.winLight && !dark) { ctx.save(); ctx.globalAlpha = 0.22; rect(605, 185, 390, 230, "#fff6c4"); ctx.restore(); }
+  rect(797, 185, 6, 230, "#3a2f4d"); rect(605, 297, 390, 6, "#3a2f4d");
+  // posters
+  rr(1030, 200, 130, 180, 6, "#f4efe3"); text("ALL-SKATE", 1095, 226, 21, "#a02040"); text("FRIDAY!", 1095, 252, 21, "#a02040");
+  ctx.save(); ctx.translate(1095, 365); ctx.scale(0.14, 0.14); drawBopper(-150, 0, 1); drawPippa(160, 0, 1); ctx.restore();
+  rr(450, 250, 110, 140, 6, "#fffbe6"); text("RULES", 505, 275, 20, "#333"); for (let i = 0; i < 5; i++) line(470, 300 + i * 16, 540 - (i % 2) * 20, 300 + i * 16, "#888", 3);
+  // vent grate
+  const rat = S.rat.i === 2 && !dark, sh = rat ? Math.sin(T * 50) * 3 : 0;
+  rr(438 + sh, 470, 144, 92, 8, "#2b2f36");
+  if (rat) { ctx.save(); ctx.beginPath(); ctx.rect(446, 478, 128, 76); ctx.clip(); head("rat", 510, 520, 0.55, { only: true, glow: true, t: T }); ctx.restore(); }
+  for (let i = 0; i < 6; i++) rect(446 + sh, 482 + i * 12, 128, 6, "#4a505a");
+  if (anim.hatch > 0.01) rr(438, 470, 144, 92 * anim.hatch, 8, "#7b8290");
+  // desk
+  rect(380, 640, 840, 30, "#6b4a32"); rect(400, 670, 800, 120, "#4a3222");
+  rr(620, 590, 70, 60, 8, "#e9e2d0"); rect(628, 572, 54, 26, "#ff5fd2"); text("ROLL", 655, 620, 16, "#a02040");
+  ctx.save(); ctx.translate(1080, 590); ell(0, 0, 46, 46, "#3a3f48"); for (let i = 0; i < 3; i++) { ctx.rotate(TAU / 3 + (i ? 0 : anim.fan)); ell(0, -22, 12, 22, "#8a929e"); } ell(0, 0, 8, 8, "#ccc"); ctx.restore(); rect(1074, 630, 12, 14, "#3a3f48");
+  rr(820, 604, 120, 40, 6, "#f4efe3"); line(830, 616, 920, 616, "#ff5fd2", 4); line(830, 628, 900, 628, "#6ff3e8", 4);
+  ell(760, 630, 26, 12, "#ffd84d"); ell(750, 616, 14, 14, "#ffd84d"); poly([736, 616, 726, 620, 736, 624], "#f07b2a");
+  // dim the edges
+  const v = ctx.createRadialGradient(800, 460, 200, 800, 460, 980); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.7)"); rect(0, 0, 1600, 900, v);
+  if (Math.random() < 0.004) { ctx.save(); ctx.globalAlpha = 0.5; rect(0, 0, 1600, 900, "#000"); ctx.restore(); }
+}
+
+// ---- Chapter 2's office: the projection booth
+function projector(T, on) {
+  for (const x of [478, 548]) {
+    ell(x, 446, 36, 36, "#3a3f48"); ell(x, 446, 28, 28, "#20242b");
+    ctx.save(); ctx.translate(x, 446); ctx.rotate(anim.reel); for (let i = 0; i < 3; i++) { ctx.rotate(TAU / 3); rect(-4, -26, 8, 22, "#8a929e"); } ctx.restore();
+    ell(x, 446, 7, 7, "#ccc");
+  }
+  rr(440, 474, 150, 82, 10, "#4a505a"); rr(452, 486, 70, 14, 4, "#2b2f36");
+  rr(588, 496, 26, 34, 6, "#2b2f36"); ell(614, 513, 9, 14, on ? "#fff6c4" : "#555");
+}
+function drawOffice2(S, T, dark) {
+  const g = ctx.createLinearGradient(0, 0, 0, 900); g.addColorStop(0, "#2a1626"); g.addColorStop(1, "#160d16");
+  rect(0, 0, 1600, 900, g);
+  floorTiles(760, "#140f14", "#6a1a2a");
+  rect(0, 150, 1600, 6, "#ffd84d"); rect(0, 156, 1600, 3, "#ff5fd2");
+  // left doorway, same as the rink: Bopper comes here
+  rect(16, 160, 268, 610, "#3a2a3d");
+  if (S.lightL && !dark) {
+    const lg = ctx.createLinearGradient(0, 170, 0, 760); lg.addColorStop(0, "#5a5030"); lg.addColorStop(1, "#2a2414"); rect(30, 170, 240, 590, lg);
+    ctx.save(); ctx.beginPath(); ctx.rect(30, 170, 240, 590); ctx.clip();
+    if (S.bop.i === 4) drawBopper(150, 900, 1.35);
+    ctx.restore();
+  } else rect(30, 170, 240, 590, "#030205");
+  shutter(30, 240, anim.doorL);
+  // the popcorn chute on the right: Gulp climbs up it
+  rect(1316, 160, 268, 610, "#3a2a3d"); rect(1330, 170, 240, 590, "#1a1218");
+  poly([1350, 300, 1550, 260, 1550, 600, 1350, 560], "#8a929e"); poly([1370, 320, 1530, 290, 1530, 570, 1370, 540], "#0a070c");
+  const gulp = S.gulp.i === 3 && !dark, gs = gulp ? Math.sin(T * 30) * 4 : 0;
+  if (gulp) { ctx.save(); ctx.beginPath(); ctx.moveTo(1370, 320); ctx.lineTo(1530, 290); ctx.lineTo(1530, 570); ctx.lineTo(1370, 540); ctx.clip(); head("gulp", 1450 + gs, 470, 1.15, {}); ctx.restore(); }
+  rr(1360, 610, 180, 50, 8, "#f4efe3"); text("POPCORN CHUTE", 1450, 635, 20, "#a02040");
+  // window onto Screen 1
+  rr(590, 170, 420, 260, 10, "#3a2a3d");
+  const wg = ctx.createLinearGradient(0, 180, 0, 420); wg.addColorStop(0, "#14223c"); wg.addColorStop(1, "#06080f"); rect(605, 185, 390, 230, wg);
+  const hue = S.hue.i === 2 && !dark, lit = S.lamp && !dark;
+  if (hue && lit) { ctx.save(); ctx.beginPath(); ctx.rect(605, 185, 390, 230); ctx.clip(); head("hue", 800, 330, 1.55, { col: S.hue.col }); ctx.restore(); }
+  rect(797, 185, 6, 230, "#3a2a3d"); rect(605, 297, 390, 6, "#3a2a3d");
+  // her color as a word too, so it doesn't depend on telling red from green
+  if (hue && lit) { rr(700, 372, 200, 50, 12, "rgba(10,6,16,.85)"); neon(HUE_WORDS[S.hue.col], 800, 398, 40, HUE_COLS[S.hue.col]); }
+  // posters
+  rr(1030, 200, 130, 180, 6, "#f4efe3"); text("NOW", 1095, 226, 21, "#a02040"); text("SHOWING", 1095, 252, 21, "#a02040");
+  ctx.save(); ctx.translate(1095, 365); ctx.scale(0.14, 0.14); drawBopper(-150, 0, 1); drawGulp(170, 0, 1); ctx.restore();
+  // desk and projector
+  rect(380, 640, 840, 30, "#6b4a32"); rect(400, 670, 800, 120, "#4a3222");
+  projector(T, lit);
+  rr(820, 590, 90, 54, 8, "#c0283b"); for (let i = 0; i < 7; i++) ell(832 + i * 11, 588 - (i % 2) * 8, 9, 8, "#fff6c4"); text("POP", 865, 622, 18, "#fff");
+  rr(1000, 600, 120, 40, 6, "#2a2a2a"); text("FILM", 1060, 620, 18, "#ffd84d");
+  // projector beam through the window
+  if (lit) { ctx.save(); ctx.globalAlpha = 0.16; poly([620, 500, 995, 190, 995, 410, 620, 526], "#fff6c4"); ctx.restore(); }
+  // projector off: the booth goes dark and only glowing things show
+  if (!S.lamp && !dark) {
+    ctx.save(); ctx.globalAlpha = 0.66; rect(0, 0, 1600, 900, "#05030c"); ctx.restore();
+    if (gulp) head("gulp", 1450 + gs, 470, 1.15, { only: true, glow: true });
+  }
+  if (hue && !lit) head("hue", 800, 330, 1.55, { only: true, glow: true });
+  if (S.lumi.i === 2 && !dark) drawLumi(515 + Math.cos(T * 3) * 60, 372 + Math.sin(T * 6) * 26, 0.48, { t: T, glow: true });
+  const v = ctx.createRadialGradient(800, 460, 200, 800, 460, 980); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.7)"); rect(0, 0, 1600, 900, v);
+  if (Math.random() < 0.004) { ctx.save(); ctx.globalAlpha = 0.5; rect(0, 0, 1600, 900, "#000"); ctx.restore(); }
+}
+function drawTitle2(T) {
+  rect(0, 0, 1600, 900, "#0b0610");
+  floorTiles(700, "#120a12", "#3a1220");
+  const flick = Math.sin(T * 13) > 0.97 ? 0.3 : 1;
+  ctx.save(); ctx.globalAlpha = 0.55 * flick;
+  drawBopper(330, 860, 0.95); drawGulp(640, 860, 0.9); drawHue(910, 860, 0.8, { col: Math.floor(T / 1.5) % 3 });
+  ctx.restore();
+  ctx.save(); ctx.globalAlpha = 0.6; rect(0, 520, 1600, 380, "#0b0610"); ctx.restore();
+  head("bop", 330, 578, 0.95, { only: true, glow: true }); head("gulp", 640, 603, 0.9, { only: true, glow: true });
+  head("hue", 1006, 719, 0.8, { only: true, glow: true, col: Math.floor(T / 1.5) % 3 });
+  drawLumi(1330 + Math.sin(T * 1.3) * 40, 650 + Math.sin(T * 2.1) * 26, 0.8, { t: T, glow: true });
+}
+
+function clockLabel(t) { const h = Math.floor(t / HOUR); return (h === 0 ? 12 : h) + " AM"; }
+function drawHUD(S) {
+  ctx.save(); ctx.shadowColor = "#000"; ctx.shadowBlur = 8;
+  text(clockLabel(S.t), 1480, 54, 52, "#fff", "right");
+  text(G.custom ? "Custom Night" : `Night ${S.night}`, 1480, 100, 26, "#d8c8ff", "right");
+  text(`Power: ${Math.ceil(S.power)}%`, 30, 40, 34, S.power < 20 ? "#ff6b6b" : "#fff", "left");
+  const u = usage(S);
+  text("Usage", 30, 78, 22, "#d8c8ff", "left");
+  for (let i = 0; i < Math.min(u, 6); i++) rr(104 + i * 30, 66, 24, 24, 4, ["#7bd88f", "#7bd88f", "#ffe066", "#ffb347", "#ff6b6b", "#ff3b3b"][i]);
+  ctx.restore();
+}
+
+function drawTitle(T) {
+  rect(0, 0, 1600, 900, "#07040d");
+  floorTiles(700, "#0d0a12", "#25212a");
+  const flick = Math.sin(T * 13) > 0.97 ? 0.3 : 1;
+  ctx.save(); ctx.globalAlpha = 0.55 * flick;
+  drawBopper(330, 860, 0.95); drawPippa(640, 860, 0.95); drawRattles(1010, 860, 1.05, { t: T }); drawZoom(1280, 860, 0.95);
+  ctx.restore();
+  ctx.save(); ctx.globalAlpha = 0.6; rect(0, 520, 1600, 380, "#07040d"); ctx.restore();
+  head("bop", 330, 578, 0.95, { only: true, glow: true }); head("pip", 640, 621, 0.95, { only: true, glow: true });
+  head("zoom", 1280, 605, 0.95, { only: true, glow: true });
+  ctx.save(); ctx.translate(1010, 860); ctx.scale(1.05, 1.05); ctx.translate(-70, -76); rattlesHead({ only: true, glow: true, t: T }); ctx.restore();
+}
+
+// ======================================================================================
+// Sound: Web Audio only, no files.
+// ======================================================================================
+let AC = null, master = null, buzz = null, noiseBuf = null;
+function audio() {
+  if (!AC) {
+    try {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      master = AC.createGain(); master.gain.value = 0.7; master.connect(AC.destination);
+      noiseBuf = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
+      const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const hum = AC.createOscillator(), hg = AC.createGain(), lp = AC.createBiquadFilter();
+      hum.type = "sawtooth"; hum.frequency.value = 55; lp.type = "lowpass"; lp.frequency.value = 160; hg.gain.value = 0.035;
+      hum.connect(lp); lp.connect(hg); hg.connect(master); hum.start(); amb.hum = hg;
+      const fan = AC.createBufferSource(), fg = AC.createGain(), fl = AC.createBiquadFilter();
+      fan.buffer = noiseBuf; fan.loop = true; fl.type = "lowpass"; fl.frequency.value = 380; fg.gain.value = 0.025;
+      fan.connect(fl); fl.connect(fg); fg.connect(master); fan.start(); amb.fan = fg;
+      buzz = AC.createOscillator(); const bg = AC.createGain(); buzz.type = "square"; buzz.frequency.value = 120; bg.gain.value = 0;
+      buzz.connect(bg); bg.connect(master); buzz.start(); amb.buzz = bg;
+    } catch (e) { AC = null; }
+  } else if (AC.state === "suspended") AC.resume();
+}
+const amb = {};
+function dest(pan) { if (!pan) return master; const p = AC.createStereoPanner(); p.pan.value = pan; p.connect(master); return p; }
+function tone(f, d, o = {}) {
+  if (!AC) return;
+  const t = AC.currentTime + (o.delay || 0), osc = AC.createOscillator(), g = AC.createGain();
+  osc.type = o.type || "sine"; osc.frequency.setValueAtTime(f, t); if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + d);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(o.vol || 0.2, t + (o.attack || 0.01)); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  osc.connect(g); g.connect(dest(o.pan)); osc.start(t); osc.stop(t + d + 0.05);
+}
+function hiss(d, o = {}) {
+  if (!AC) return;
+  const t = AC.currentTime + (o.delay || 0), src = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  src.buffer = noiseBuf; f.type = o.type || "lowpass"; f.frequency.setValueAtTime(o.f || 1000, t); if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t + d); f.Q.value = o.q || 1;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(o.vol || 0.2, t + (o.attack || 0.01)); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  src.connect(f); f.connect(g); g.connect(dest(o.pan)); src.start(t, Math.random()); src.stop(t + d + 0.05);
+}
+const SFX = {
+  click() { tone(900, 0.05, { type: "square", vol: 0.05 }); },
+  door() { hiss(0.35, { f: 500, vol: 0.4 }); tone(80, 0.3, { vol: 0.35, to: 50 }); },
+  cam() { tone(1400, 0.05, { type: "square", vol: 0.04 }); hiss(0.18, { f: 4000, vol: 0.08, type: "highpass" }); },
+  steps(pan, vol, n = 3, away = false) { for (let i = 0; i < n; i++) { const v = away ? vol * (1 - i / n) : vol * (0.6 + 0.4 * i / n); tone(70, 0.22, { vol: v, to: 40, pan, delay: i * 0.45 }); hiss(0.1, { f: 300, vol: v * 0.5, pan, delay: i * 0.45 }); } },
+  tinkle(vol = 0.06) { [2093, 1568, 2637, 1760].forEach((f, i) => tone(f, 0.5, { type: "triangle", vol, delay: i * 0.16 })); },
+  creak() { tone(190, 0.9, { type: "sawtooth", vol: 0.05, to: 120, attack: 0.2 }); },
+  clank(vol, pan = -0.4, n = 3) { for (let i = 0; i < n; i++) { const d = i * 0.2 + Math.random() * 0.08; hiss(0.08, { f: 3200, type: "bandpass", q: 4, vol, pan, delay: d }); tone(880 + Math.random() * 600, 0.08, { type: "square", vol: vol * 0.3, pan, delay: d }); } },
+  skates(d) { hiss(d, { f: 400, to: 2400, type: "bandpass", q: 2, vol: 0.32, pan: 0.8, attack: d * 0.9 }); tone(110, d, { type: "sawtooth", vol: 0.04, to: 220, pan: 0.8, attack: d * 0.9 }); },
+  bang() { for (let i = 0; i < 3; i++) { tone(60, 0.25, { vol: 0.6, to: 35, pan: 0.7, delay: i * 0.28 }); hiss(0.2, { f: 700, vol: 0.4, pan: 0.7, delay: i * 0.28 }); } },
+  giggle() { tone(760, 0.12, { type: "square", vol: 0.025, to: 560, pan: 0.6 }); tone(760, 0.12, { type: "square", vol: 0.025, to: 560, pan: 0.6, delay: 0.18 }); },
+  powerDown() { tone(220, 1.5, { type: "sawtooth", vol: 0.15, to: 30 }); hiss(0.6, { f: 300, vol: 0.2 }); },
+  scare(soft) { const v = soft ? 0.25 : 0.6; tone(380, 1.2, { type: "sawtooth", vol: v, to: 900 }); tone(300, 1.2, { type: "square", vol: v * 0.6, to: 640 }); hiss(1.2, { f: 2500, vol: v, type: "highpass" }); },
+  chime() { [523, 659, 784, 1047].forEach((f, i) => { tone(f, 1.6, { vol: 0.22, delay: i * 0.5 }); tone(f * 2.01, 1.2, { vol: 0.06, delay: i * 0.5 }); }); hiss(1.4, { f: 2000, type: "bandpass", vol: 0.12, delay: 2.1, attack: 0.3 }); },
+  waddle(vol) { for (let i = 0; i < 3; i++) { tone(520, 0.09, { type: "square", vol: vol * 0.3, to: 380, pan: 0.6, delay: i * 0.35 }); hiss(0.08, { f: 600, vol: vol * 0.5, pan: 0.6, delay: i * 0.35 }); } },
+  chomp(vol) { for (let i = 0; i < 2; i++) { tone(150, 0.09, { type: "square", vol: vol * 0.5, to: 70, pan: 0.8, delay: i * 0.22 }); hiss(0.07, { f: 1400, type: "bandpass", vol, pan: 0.8, delay: i * 0.22 }); } },
+  toss() { hiss(0.4, { f: 600, to: 2600, type: "bandpass", q: 2, vol: 0.18, pan: 0.6 }); tone(700, 0.06, { type: "square", vol: 0.05, delay: 0.1 }); },
+  shimmer(vol, down = false) { [880, 1175, 1480, 1760].forEach((f, i) => tone(down ? 2200 - f : f, 0.4, { type: "triangle", vol: vol * 0.4, delay: i * 0.09 })); },
+  wrong() { tone(150, 0.35, { type: "sawtooth", vol: 0.18 }); tone(140, 0.35, { type: "square", vol: 0.1 }); },
+  flutter(vol) { for (let i = 0; i < 6; i++) hiss(0.05, { f: 900, type: "bandpass", q: 3, vol, pan: -0.3, delay: i * 0.07 }); },
+  projector(on) { tone(on ? 120 : 200, 0.4, { type: "sawtooth", vol: 0.05, to: on ? 200 : 90 }); SFX.click(); },
+  ring() { for (let i = 0; i < 2; i++) for (let j = 0; j < 8; j++) tone(j % 2 ? 480 : 440, 0.05, { type: "square", vol: 0.04, delay: i * 0.9 + j * 0.05 }); },
+};
+const MUSIC_BOX = [76, 79, 84, 83, 79, 76, 77, 81, 79, 76, 72, 74, 76, 79, 77, 74, 72];
+let mbNext = 0, mbStep = 0;
+function musicBox(T) {
+  if (!AC || T < mbNext) return;
+  tone(440 * Math.pow(2, (MUSIC_BOX[mbStep % MUSIC_BOX.length] - 69) / 12), 0.7, { type: "triangle", vol: 0.12, pan: -0.7 });
+  mbStep++; mbNext = T + (mbStep % MUSIC_BOX.length === 0 ? 1.2 : 0.34);
+}
+
+// ======================================================================================
+// Screens, input and the main loop
+// ======================================================================================
+const $ = id => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+const TEST = Q.has("test");
+const SAVE_KEY = TEST ? "closingtime.test" : "closingtime.v1";
+// Chapter 1 progress stays at the top level (older saves keep working); Chapter 2 has its own under c2.
+const FRESH = () => ({ night: 1, beat: false, custom: false, max: false });
+function loadSave() {
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || "{}") || {}; } catch { }
+  return { ...FRESH(), soft: false, ch: 1, ...s, c2: { ...FRESH(), ...(s.c2 || {}) } };
+}
+function storeSave() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch { } }
+let save = loadSave();
+const G = { mode: "title", ch: save.ch === 2 ? 2 : 1, S: null, T: 0, speed: 1, custom: false, customAI: [5, 5, 5, 5], cai: {}, scareT: 0, dawnT: 0, introT: 0, rnd: Q.has("seed") ? rng(+Q.get("seed")) : Math.random, nextClank: 0, heard: new Set() };
+const prog = () => G.ch === 2 ? save.c2 : save;
+
+// Everything that differs between the chapters. The rules (step, feed, paint) branch on S.ch.
+const CH = {
+  1: {
+    NIGHTS, WHO, NAMES, CAM_NAMES, place: "Rollaway Rink",
+    sub: "You're the night guard at Rollaway Rink. The skate band wakes up after closing. Make it to 6 AM.",
+    hint: "Custom Night has no phone calls. New to the rink? Read How to play first.",
+    how: [
+      "<b>Bopper</b>, the hippo DJ, walks to your <b>left door</b>. Click LIGHT to look. If he's there, shut the DOOR. Open it again when his footsteps walk away.",
+      "<b>Pippa</b>, the skating doll, only moves when nobody's watching her camera. If her face shows up in your <b>window</b>, turn on the WINDOW LIGHT until she skates off.",
+      "<b>Rattles</b>, the robot raccoon, crawls through the <b>vents</b>. Listen for clanking and watch Cam 9. When the vent shakes, close the VENT HATCH.",
+      "<b>Zoom</b>, the derby cheetah, waits behind the Pit Stop garage door (Cam 4). Check on him or he gets restless. If you hear skates racing, shut the <b>right door</b>, fast!",
+    ],
+    keys: "Everything uses power. Doors, lights and cameras drain it faster. If the power runs out, the lights go out… and you'd better hope it's almost 6.<br>Keys: Q / E doors · A / D lights · W window light · S vent hatch · Space cameras · 1–9 pick a camera · Esc pause",
+    CALLS: [null,
+      "Hey, new guard! Welcome to Rollaway Rink. After closing, the skate band robots wake up and wander around. They just want somebody to play with… all night… forever. Tonight it's only Bopper. He comes up the West Hall to your LEFT door. Click LIGHT to peek. If he's there, shut the DOOR, and open it when his footsteps walk away. Doors eat power, so don't leave them shut. Make it to 6 AM!",
+      "You made it! Two more are awake tonight. Pippa, the skating doll, only moves when nobody's watching her camera. If you see her face in your WINDOW, turn on the WINDOW LIGHT until she skates away. And Zoom waits behind the Pit Stop garage door on Cam 4. Peek at him now and then. If you hear skates racing down the East Hall, slam the RIGHT DOOR. Pressing E drops the tablet and shuts it in one go.",
+      "Uh oh. Rattles got into the vents. You'll hear him clanking around, and you can watch him on Cam 9. When the vent next to your desk starts shaking, close the VENT HATCH. Everybody's a little faster tonight.",
+      "Night four. They're all wide awake now. Save your power: only close a door when someone's actually there. Listen for footsteps, clanks and skates. You've got this.",
+      "Last night of the week! This is when they party the hardest. Keep your eyes on everything and your hands on the buttons. See you at 6. I hope.",
+    ],
+    TIPS: {
+      bop: "Peek with the LEFT LIGHT every few seconds. If Bopper's in the doorway, shut the left DOOR.",
+      pip: "When Pippa's face shows up in the window, turn on the WINDOW LIGHT and keep it on until she skates away.",
+      rat: "When you hear clanking and the vent shakes, close the VENT HATCH. Cam 9 shows how close Rattles is.",
+      zoom: "Check the Pit Stop (Cam 4) often. If you hear skates racing, shut the RIGHT DOOR right away.",
+      power: "The power ran out. Only close doors when someone's really there, and don't stare at the cameras too long.",
+    },
+    CTL: [["bDoorL", "doorL"], ["bDoorR", "doorR"], ["bLightL", "lightL"], ["bLightR", "lightR"], ["bWin", "winLight"], ["bVent", "hatch"]],
+    KEYS: { KeyQ: "doorL", KeyE: "doorR", KeyA: "lightL", KeyD: "lightR", KeyW: "winLight", KeyS: "hatch", Space: "cams" },
+    dawn: "Rise and shine. The band is back on stage.",
+    week: "Rollaway Rink owes you a giant paycheck and free skate rentals for life. ★ Custom Night is open now: set how wild each one is.",
+  },
+  2: {
+    NIGHTS: NIGHTS2, WHO: ["bop", "gulp", "hue", "lumi"], NAMES: { bop: "Bopper", gulp: "Gulp", hue: "Hue", lumi: "Lumi", power: "Bopper" }, CAM_NAMES: CAM_NAMES2, place: "Starlite Cinema",
+    sub: "Chapter 2: the night shift at the Starlite Cinema. Bopper followed you here, and he brought friends.",
+    hint: "Custom Night has no phone calls. New to the cinema? Read How to play first.",
+    how: [
+      "<b>Bopper</b> is back, in 3D glasses. Same as the rink: he comes to your <b>left door</b>. Click LIGHT to look, and shut the DOOR if he's there.",
+      "<b>Gulp</b>, the pelican usher, waddles down the Aisle (Cam 6) to the <b>popcorn chute</b> on your right. If he's on the Aisle, or you hear chomping at the chute, click POPCORN. He chases it all the way back. Popcorn with nobody there wastes power.",
+      "<b>Hue</b>, the chameleon, shows up at your <b>window</b> glowing RED, GREEN or BLUE. Click the button that matches her color. The wrong color makes her come at you faster! You need the PROJECTOR on to see her color, and her color word shows up under her.",
+      "<b>Lumi</b>, the moth, loves light. Lights and the cameras pull her in faster. When you hear her fluttering around your <b>projector</b>, turn the PROJECTOR off and keep the light and the tablet off until she flies away.",
+    ],
+    keys: "The door, the light and the cameras use power, and it runs out faster here than at the rink. Popcorn is free when Gulp's there to chase it.<br>Keys: Q door · A light · E popcorn · S projector · R / G / B Hue's colors · Space cameras · 1–9 pick a camera · Esc pause",
+    CALLS: [null,
+      "Hey, it's me again, the old guard from the rink! They moved me to the Starlite Cinema, and guess who followed us? Bopper. He's wearing 3D glasses now, but it's the same deal: he comes up the West Hall to your LEFT door. Peek with the LIGHT and shut the DOOR when he's there. Power runs out faster here, so open the door again when he walks away. This booth has a PROJECTOR too. Just leave it on for now. Make it to 6 AM!",
+      "Two new ones tonight. Gulp, the pelican usher, waddles down the Aisle to the popcorn chute on your right. Check Cam 6. If he's on the Aisle, click POPCORN and he'll chase it all the way back. If you hear chomping at the chute, toss it fast! And watch your window for Hue, the chameleon. She glows RED, GREEN or BLUE. Click the button that matches her color.",
+      "Uh oh. Lumi woke up. She's a moth, and she LOVES light. Your light and the cameras pull her in faster. If you hear fluttering by the projector, turn the PROJECTOR off and don't touch the light or the tablet until she flies away. But remember: you need the projector on to see Hue's color!",
+      "Night four. Everybody wants a front-row seat. Dark for Lumi, projector light for Hue, popcorn for Gulp, the door for Bopper. You've got this.",
+      "Last night! It's the big premiere, and they're all coming. Keep your eyes open and your popcorn ready. See you at 6. I hope.",
+    ],
+    TIPS: {
+      bop: "Peek with the LEFT LIGHT every few seconds. If Bopper's in the doorway, shut the left DOOR.",
+      gulp: "Check the Aisle (Cam 6). If Gulp's there, or you hear chomping at the chute, click POPCORN right away.",
+      hue: "Keep the PROJECTOR on so you can see Hue's color, then click the button that matches.",
+      lumi: "When you hear fluttering, turn the PROJECTOR off and keep the light and the tablet off until Lumi flies away.",
+      power: "The power ran out. Only shut the door when Bopper's really there, and don't stare at the cameras too long.",
+    },
+    CTL: [["bDoorL", "doorL"], ["bLightL", "lightL"], ["bFeed", null], ["bLamp", "lamp"], ["bHue0", null], ["bHue1", null], ["bHue2", null]],
+    KEYS: { KeyQ: "doorL", KeyA: "lightL", KeyE: "feed", KeyS: "lamp", KeyR: "hue0", KeyG: "hue1", KeyB: "hue2", Space: "cams" },
+    dawn: "The house lights come up. Show's over.",
+    week: "The Starlite Cinema gives you free popcorn for life. ★ Custom Night is open now: set how wild each one is.",
+  },
+};
+const ALL_CTL = ["bDoorL", "bDoorR", "bLightL", "bLightR", "bWin", "bVent", "bFeed", "bLamp", "bHue0", "bHue1", "bHue2"];
+
+function show(id) { for (const s of ["title", "how", "custom", "hud", "pause", "over", "won"]) $(s).hidden = !id.includes(s); }
+let capTimer = 0;
+function caption(s, ms = 2600) { const c = $("cap"); c.textContent = s; c.style.opacity = 1; clearTimeout(capTimer); capTimer = setTimeout(() => (c.style.opacity = 0), ms); }
+
+function refreshTitle() {
+  save = loadSave();
+  const P = prog(), C = CH[G.ch];
+  $("tSub").textContent = C.sub;
+  $("bCh1").classList.toggle("on", G.ch === 1); $("bCh2").classList.toggle("on", G.ch === 2);
+  $("bCont").textContent = P.beat ? `Night ${P.night}` : (P.night > 1 ? `Continue: Night ${P.night}` : "Start: Night 1");
+  $("bNew").hidden = P.night <= 1 && !P.beat; $("bNew").textContent = "New game";
+  $("bSoft").textContent = `Less scary: ${save.soft ? "ON" : "OFF"}`;
+  $("bSoft").classList.toggle("on", save.soft);
+  $("stars").textContent = [P.beat && "★ Survived the week", P.custom && "★ Custom Night", P.max && "★ All 20s"].filter(Boolean).join("   ");
+}
+function toTitle() { G.mode = "title"; G.S = null; show(["title"]); refreshTitle(); }
+function pickChapter(n) { if (G.ch === n) return; G.ch = n; newArmed = 0; save.ch = n; storeSave(); refreshTitle(); }
+
+function startNight(n, ai, custom = false) {
+  audio();
+  const C = CH[G.ch];
+  G.custom = custom; G.S = newNight(n, ai || C.NIGHTS[n], G.ch); G.mode = "play"; G.introT = 0; G.nextClank = 0; mbStep = 0; mbNext = 0;
+  anim.doorL = anim.doorR = anim.hatch = 0;
+  for (const b of $("camMap").querySelectorAll("button")) b.textContent = `${b.dataset.cam} ${C.CAM_NAMES[b.dataset.cam]}`;
+  show(["hud"]); syncControls();
+  $("msg").hidden = true;
+  const key = G.ch + ":" + n;
+  if (!custom && C.CALLS[n] && !G.heard.has(key)) { // the call plays once per night; retries skip it
+    SFX.ring();
+    const S0 = G.S, tryCall = () => {
+      if (G.S !== S0 || S0.over || S0.won) return;
+      if (G.mode !== "play") return setTimeout(tryCall, 300); // paused during the ring: wait
+      G.heard.add(key); typeCall(C.CALLS[n]);
+    };
+    setTimeout(tryCall, 1600);
+  }
+}
+let typeTimer = 0;
+function typeCall(s) {
+  $("msg").hidden = false; const p = $("msgText"); let i = 0; clearInterval(typeTimer);
+  typeTimer = setInterval(() => { i += 2; p.textContent = s.slice(0, i); if (i >= s.length) clearInterval(typeTimer); }, 28);
+}
+$("msgOk").onclick = () => { clearInterval(typeTimer); $("msg").hidden = true; };
+
+function act(what) {
+  const S = G.S;
+  if (G.mode !== "play" || !S || S.out || S.over) return;
+  audio();
+  if (what === "cams") { S.cams = !S.cams; if (S.cams) S.lightL = S.lightR = S.winLight = false; SFX.cam(); syncControls(); return; }
+  if (S.cams) { S.cams = false; SFX.cam(); } // an office key while the tablet is up drops it first
+  if (what === "doorL" || what === "doorR" || what === "hatch") { S[what] = !S[what]; SFX.door(); }
+  if (what === "lightL") { S.lightL = !S.lightL; S.lightR = false; SFX.click(); }
+  if (what === "lightR") { S.lightR = !S.lightR; S.lightL = false; SFX.click(); }
+  if (what === "winLight") { S.winLight = !S.winLight; SFX.click(); }
+  if (what === "lamp") { S.lamp = !S.lamp; SFX.projector(S.lamp); }
+  if (what === "feed") { SFX.toss(); feed(S); }
+  if (what.startsWith("hue")) { SFX.click(); paint(S, +what[3]); }
+  syncControls();
+}
+function pickCam(n) { const S = G.S; if (G.mode !== "play" || !S || !S.cams) return; S.cam = n; SFX.cam(); syncControls(); }
+function syncControls() {
+  const S = G.S; if (!S) return;
+  const mine = new Map(CH[S.ch].CTL);
+  for (const id of ALL_CTL) {
+    const b = $(id), k = mine.get(id);
+    b.classList.toggle("on", !!(k && S[k])); b.hidden = S.cams || !mine.has(id); b.disabled = !!S.out;
+  }
+  $("bCam").innerHTML = S.cams ? "▼ PUT THE TABLET DOWN <small>Space</small>" : "▲ CAMERAS <small>Space</small>";
+  $("bCam").disabled = !!S.out;
+  $("camMap").hidden = !S.cams;
+  for (const b of $("camMap").querySelectorAll("button")) b.classList.toggle("on", +b.dataset.cam === S.cam);
+}
+// camera map buttons (labels are set per chapter in startNight)
+(() => {
+  const m = $("camMap");
+  for (const [n, [x, y]] of Object.entries(CAM_POS)) {
+    const b = document.createElement("button"); b.dataset.cam = n; b.textContent = `${n} ${CAM_NAMES[n]}`;
+    b.style.left = x + "px"; b.style.top = y + "px"; b.onclick = () => pickCam(+n); m.appendChild(b);
+  }
+  const y = document.createElement("div"); y.className = "you"; y.textContent = "★ YOU"; m.appendChild(y);
+})();
+
+for (const [id, w] of [["bDoorL", "doorL"], ["bDoorR", "doorR"], ["bLightL", "lightL"], ["bLightR", "lightR"], ["bWin", "winLight"], ["bVent", "hatch"], ["bCam", "cams"], ["bFeed", "feed"], ["bLamp", "lamp"], ["bHue0", "hue0"], ["bHue1", "hue1"], ["bHue2", "hue2"]]) $(id).onclick = () => act(w);
+addEventListener("keydown", e => {
+  if (e.repeat) return;
+  if (e.code === "Escape" || e.code === "KeyP") { if (G.mode === "play") pause(); else if (G.mode === "pause") resume(); return; }
+  if (G.mode !== "play" || !G.S) return;
+  const k = CH[G.S.ch].KEYS[e.code];
+  if (k) { e.preventDefault(); act(k); }
+  const d = /^Digit([1-9])$/.exec(e.code); if (d) pickCam(+d[1]);
+});
+function pause() { G.mode = "pause"; show(["hud", "pause"]); if (AC) AC.suspend(); }
+function resume() { G.mode = "play"; show(["hud"]); if (AC) AC.resume(); }
+$("bPause").onclick = pause; $("pRes").onclick = resume; $("pQuit").onclick = () => { if (AC) AC.resume(); toTitle(); };
+$("bCh1").onclick = () => pickChapter(1); $("bCh2").onclick = () => pickChapter(2);
+$("bCont").onclick = () => startNight(prog().night);
+let newArmed = 0;
+$("bNew").onclick = () => {
+  if (Date.now() - newArmed > 4000) { newArmed = Date.now(); $("bNew").textContent = "Start over at Night 1? Click again"; setTimeout(refreshTitle, 4000); return; }
+  newArmed = 0; prog().night = 1; storeSave(); startNight(1);
+};
+$("bHow").onclick = () => {
+  const C = CH[G.ch];
+  $("howWho").innerHTML = C.how.map(h => `<div>${h}</div>`).join(""); $("howKeys").innerHTML = C.keys;
+  G.mode = "how"; show(["how"]);
+};
+$("howBack").onclick = toTitle;
+$("bSoft").onclick = () => { save.soft = !save.soft; storeSave(); refreshTitle(); };
+$("bCustom").onclick = () => {
+  // first open per chapter: start gentle until that chapter's week is beaten
+  G.customAI = G.cai[G.ch] ??= prog().beat ? [5, 5, 5, 5] : [...CH[G.ch].NIGHTS[1]];
+  $("customHint").textContent = CH[G.ch].hint;
+  G.mode = "custom"; show(["custom"]); renderCards();
+};
+$("cBack").onclick = toTitle;
+$("cGo").onclick = () => startNight(6, G.customAI, true);
+for (const b of document.querySelectorAll(".preset")) b.onclick = () => { G.customAI.fill(+b.dataset.v); renderCards(); };
+$("oRetry").onclick = () => G.custom ? startNight(6, G.customAI, true) : startNight(G.S.night);
+$("oTitle").onclick = toTitle; $("wTitle").onclick = toTitle;
+$("wNext").onclick = () => startNight(prog().night);
+
+function renderCards() {
+  const box = $("cards"), C = CH[G.ch]; box.innerHTML = "";
+  C.WHO.forEach((w, i) => {
+    const c = document.createElement("div"); c.className = "card";
+    c.innerHTML = `<canvas width="220" height="180"></canvas><div class="nm">${C.NAMES[w]}</div><div class="row"><button data-d="-1" aria-label="Less">−</button><div class="lv">${G.customAI[i]}</div><button data-d="1" aria-label="More">+</button></div>`;
+    for (const b of c.querySelectorAll("button")) b.onclick = () => { G.customAI[i] = Math.max(0, Math.min(20, G.customAI[i] + +b.dataset.d)); renderCards(); };
+    box.appendChild(c);
+    // draw the portrait with the shared head painters
+    const pc = c.querySelector("canvas").getContext("2d"), main = ctx;
+    pc.fillStyle = "#120a22"; pc.fillRect(0, 0, 220, 180);
+    ctx = pc; head(w, 110, w === "gulp" ? 92 : 100, w === "gulp" ? 0.72 : 0.85, { t: 0, col: 1 }); ctx = main;
+  });
+}
+
+// ---- events from the rules → sound and captions
+function handleEvents(S) {
+  for (const e of S.events) {
+    switch (e) {
+      case "step": SFX.steps(-0.7, 0.08); break;
+      case "step-near": SFX.steps(-0.85, 0.25); caption("🔊 Footsteps… on the left"); break;
+      case "bop-leave": SFX.steps(-0.85, 0.25, 4, true); caption("🔊 Footsteps walking away"); break;
+      case "pip-move": SFX.tinkle(0.025); break;
+      case "pip-window": SFX.creak(); SFX.tinkle(0.07); caption("🎵 A music-box tinkle… by the window"); break;
+      case "pip-leave": hiss(0.8, { f: 900, type: "bandpass", vol: 0.12 }); caption("Pippa skated away"); break;
+      case "rattle1": SFX.clank(0.08, -0.4, 2); caption("🔊 clank… (somewhere in the vents)"); break;
+      case "rattle2": SFX.clank(0.3, -0.3, 5); caption("🔊 CLANK CLANK! Something's at the vent!"); break;
+      case "rat-leave": SFX.clank(0.12, -0.4, 4); caption("🔊 Clattering away down the vents"); break;
+      case "zoom2": SFX.giggle(); break;
+      case "zoom-run": SFX.skates(zoomRun(S.ai[3])); caption("🔊 Skates racing down the East Hall!", 2000); break;
+      case "bang": SFX.bang(); caption("BANG BANG BANG! (that cost some power)"); break;
+      case "gulp1": case "gulp2": SFX.waddle(0.04 + 0.04 * (e === "gulp2")); if (e === "gulp2") caption("🔊 Flap… flap… (somebody's on the Aisle)"); break;
+      case "gulp3": SFX.chomp(0.3); caption("🔊 CHOMP CHOMP! Something's at the popcorn chute!"); break;
+      case "gulp-leave": SFX.waddle(0.08); caption("Gulp chased the popcorn all the way back"); break;
+      case "popcorn-waste": caption("The popcorn rolled away. Nobody was there. (that cost some power)"); break;
+      case "hue-move": SFX.shimmer(0.03); break;
+      case "hue-window": SFX.shimmer(0.12); caption("✨ A shimmer… by the window"); break;
+      case "hue-leave": SFX.shimmer(0.08, true); caption("Hue crept away"); break;
+      case "hue-wrong": SFX.wrong(); caption("Wrong color! Hue's coming closer!"); break;
+      case "lumi-move": SFX.flutter(0.04); break;
+      case "lumi-lamp": SFX.flutter(0.2); caption("🔊 Flutter flutter… something's at your projector!"); break;
+      case "lumi-leave": SFX.flutter(0.08); caption("Lumi fluttered back up to the rafters"); break;
+      case "glitch": hiss(0.5, { f: 3000, type: "highpass", vol: 0.15 }); break;
+      case "powerout": $("msg").hidden = true; SFX.powerDown(); caption("The power's out…", 3000); syncControls(); break;
+      case "scare": break;
+      case "6am": break;
+    }
+  }
+  S.events.length = 0;
+}
+
+function finishNight() {
+  const S = G.S, P = prog(), C = CH[S.ch];
+  if (G.custom) {
+    if (S.ai.some(a => a > 0)) P.custom = true; if (S.ai.every(a => a >= 20)) P.max = true; storeSave();
+    $("wonT").textContent = "6 AM! Custom Night beaten!";
+    $("wonP").textContent = C.WHO.map((w, i) => `${C.NAMES[w]} ${S.ai[i]}`).join(" · ") + (S.ai.every(a => a >= 20) ? " — ALL 20s! You're a legend." : "");
+    $("wNext").hidden = true;
+  } else if (S.night >= 5) {
+    P.beat = true; P.night = 5; storeSave();
+    $("wonT").textContent = "You survived the whole week!";
+    $("wonP").textContent = C.week;
+    $("wNext").hidden = true;
+  } else {
+    P.night = Math.max(P.night, S.night + 1); storeSave();
+    $("wonT").textContent = `Night ${S.night} complete!`;
+    $("wonP").textContent = S.night === 4 ? "One more night to go." : `On to Night ${S.night + 1}.`;
+    $("wNext").hidden = false; $("wNext").textContent = `Night ${S.night + 1}`;
+  }
+  G.mode = "won"; show(["won"]);
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now; G.T += dt;
+  const T = G.T, S = G.S;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (G.mode === "play" && S) {
+    const k = $("msg").hidden ? dt * G.speed : 0; // the old guard's call holds the clock
+    for (let left = k; left > 0; left -= 0.05) step(S, Math.min(0.05, left), G.rnd);
+    handleEvents(S);
+    if (S.over) { G.mode = "scare"; G.scareT = 0; $("msg").hidden = true; show([]); SFX.scare(save.soft); }
+    else if (S.won) { G.mode = "dawn"; G.dawnT = 0; show([]); SFX.chime(); }
+  }
+  if (S && (G.mode === "play" || G.mode === "pause")) {
+    const ease = (a, b) => a + (b - a) * Math.min(1, dt * 12);
+    anim.doorL = ease(anim.doorL, S.doorL ? 1 : 0); anim.doorR = ease(anim.doorR, S.doorR ? 1 : 0); anim.hatch = ease(anim.hatch, S.hatch ? 1 : 0);
+    if (G.mode === "play") { anim.fan += dt * 14 * (S.out ? 0 : 1); anim.reel += dt * 5 * (S.lamp && !S.out ? 1 : 0); }
+    if (amb.buzz) amb.buzz.gain.value = (S.lightL || S.lightR || S.winLight) ? 0.012 : 0;
+    if (amb.hum) amb.hum.gain.value = S.out ? 0 : 0.035;
+    if (amb.fan) amb.fan.gain.value = S.out ? 0 : 0.025;
+    if (S.cams) drawCams(S, T);
+    else {
+      (S.ch === 2 ? drawOffice2 : drawOffice)(S, T, !!S.out);
+      if (S.out) {
+        ctx.save(); ctx.globalAlpha = 0.92; rect(0, 0, 1600, 900, "#000"); ctx.restore();
+        if (S.out.t > 2.5 && Math.sin(T * 7) > -0.2) head("power", 150, 360, 0.9, { only: true, glow: true });
+        if (S.out.t > 2.5 && G.mode === "play") musicBox(T);
+      }
+      if (S.ch === 1 && S.rat.i === 2 && !S.out && G.mode === "play" && T > G.nextClank) { SFX.clank(0.14, -0.3, 2); G.nextClank = T + 0.9; }
+      if (S.ch === 2 && !S.out && G.mode === "play" && T > G.nextClank && (S.gulp.i === 3 || S.lumi.i === 2)) {
+        if (S.gulp.i === 3) SFX.chomp(0.16); if (S.lumi.i === 2) SFX.flutter(0.1); G.nextClank = T + 0.8;
+      }
+    }
+    drawHUD(S);
+    G.introT += dt;
+    if (G.introT < 3) { ctx.save(); ctx.globalAlpha = Math.min(1, 3 - G.introT); rect(0, 330, 1600, 200, "rgba(0,0,0,.6)"); text("12 AM", 800, 400, 90, "#fff"); text(G.custom ? "Custom Night" : `Night ${S.night}`, 800, 480, 40, "#d8c8ff"); ctx.restore(); }
+  } else if (G.mode === "scare" && S) {
+    G.scareT += dt;
+    const soft = save.soft, who = S.over;
+    rect(0, 0, 1600, 900, "#000");
+    if (soft && G.scareT < 0.6) { text("!", 800, 450, 300, "#ff3b3b"); }
+    else {
+      const t = soft ? G.scareT - 0.6 : G.scareT, sh = soft ? 0 : 26 * Math.max(0, 1 - t);
+      ctx.save(); ctx.translate((Math.random() - 0.5) * sh, (Math.random() - 0.5) * sh);
+      const sz = (soft ? 2.6 : 5.6) * Math.min(1, t / 0.18 + 0.2);
+      if (!soft) { const rg = ctx.createRadialGradient(800, 450, 100, 800, 450, 900); rg.addColorStop(0, "#3a0000"); rg.addColorStop(1, "#000"); rect(0, 0, 1600, 900, rg); }
+      head(who, 800, who === "gulp" ? 420 : 470, sz, { open: Math.min(1, t * 3), glow: true, scary: !soft, t: T, col: S.hue.col });
+      ctx.restore();
+      if (!soft && t < 0.12) { ctx.save(); ctx.globalAlpha = 0.5; rect(0, 0, 1600, 900, "#fff"); ctx.restore(); }
+    }
+    if (G.scareT > (soft ? 2 : 1.5)) {
+      G.mode = "over"; show(["over"]);
+      $("overT").textContent = `${CH[S.ch].NAMES[who]} got you!`;
+      $("overWhen").textContent = `${clockLabel(S.t)}, ${G.custom ? "Custom Night" : "Night " + S.night}`;
+      $("overTip").textContent = "Tip: " + CH[S.ch].TIPS[who];
+      if (amb.buzz) amb.buzz.gain.value = 0;
+    }
+  } else if (G.mode === "over" && S) {
+    rect(0, 0, 1600, 900, "#000"); ctx.save(); ctx.globalAlpha = 0.25; ctx.drawImage(NOISE[Math.floor(T * 20) % 3], 0, 0, 1600, 900); ctx.restore();
+  } else if (G.mode === "dawn" && S) {
+    G.dawnT += dt;
+    rect(0, 0, 1600, 900, "#000");
+    const k = Math.min(1, G.dawnT / 1.2);
+    text(k < 1 ? "5 AM" : "6 AM", 800, 420, 160, "#fff");
+    if (k >= 1) { ctx.save(); ctx.globalAlpha = Math.min(1, G.dawnT - 1.2); text(CH[S.ch].dawn, 800, 560, 36, "#ffe066"); ctx.restore(); }
+    if (amb.buzz) amb.buzz.gain.value = 0;
+    if (G.dawnT > 3.6) finishNight();
+  } else if (G.mode === "won") {
+    rect(0, 0, 1600, 900, "#0b0618");
+  } else (G.ch === 2 ? drawTitle2 : drawTitle)(T);
+  requestAnimationFrame(frame);
+}
+
+// fit the 1600×900 stage to the window
+function fit() {
+  const s = Math.min(innerWidth / 1600, innerHeight / 900), st = $("stage");
+  st.style.transform = `translate(${(innerWidth - 1600 * s) / 2}px, ${(innerHeight - 900 * s) / 2}px) scale(${s})`;
+}
+addEventListener("resize", fit); fit();
+addEventListener("pointerdown", audio, { once: true });
+toTitle();
+requestAnimationFrame(frame);
+
+if (TEST || Q.has("debug")) window.__ct = { G, get S() { return G.S; }, step, sim, newNight, NIGHTS, NIGHTS2, POLICIES, POLICIES2, CH, feed, paint, rng, startNight, usage, HOUR, NIGHT_LEN, setSpeed: k => (G.speed = k) };
+</script>
+</body>
+</html>
